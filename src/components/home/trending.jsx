@@ -216,7 +216,7 @@ export default function Trending() {
         <div className="mt-10 flex justify-center">
           <Link
             to="/trending"
-            className="inline-flex items-center gap-2 bg-black hover:bg-black text-white px-6 py-3 rounded-lg font-black text-xs uppercase tracking-wide transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-xl"
+            className="inline-flex items-center gap-2 bg-green-700 hover:bg-green-800 text-white px-6 py-3 rounded-lg font-black text-xs uppercase tracking-wide transition-all duration-300 transform hover:scale-105 shadow-md hover:shadow-xl"
           >
             View All Trending
             <svg
