@@ -7,7 +7,7 @@ import Trending from "../pages/public/Trending";
 import ProductDetails from "../pages/public/ProductDetails";
 import Cart from "../pages/public/Cart";
 import Checkout from "../pages/public/Checkout";
-import OrderSuccess from "../pages/public/OrderSuccess";
+
 import Profile from "../pages/public/Profile";
 import Login from "../pages/auth/Login";
 import Register from "../pages/auth/Register";
@@ -56,14 +56,7 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
-      <Route
-        path="/order-success"
-        element={
-          <ProtectedRoute>
-            <OrderSuccess />
-          </ProtectedRoute>
-        }
-      />
+     
 
       {/* Admin Login Route */}
       <Route path="/admin/login" element={<AdminLogin />} />

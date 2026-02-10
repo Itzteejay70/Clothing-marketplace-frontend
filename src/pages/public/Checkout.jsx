@@ -293,7 +293,7 @@ export default function Checkout() {
         </div>
       </div>
 
-      {/* ✅ NEW: Success Modal */}
+      {/* Success Modal */}
       {showSuccess && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div
