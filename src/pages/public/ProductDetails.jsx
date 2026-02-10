@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { getProductById } from "../../services/productService.js";
 import { useCart } from "../../context/CartContext";
-import { HiArrowLeft, HiShoppingCart } from "react-icons/hi";
+import { HiArrowLeft, HiShoppingCart, HiCheckCircle } from "react-icons/hi";
 
 export default function ProductDetails() {
   const { id } = useParams();
@@ -12,13 +12,16 @@ export default function ProductDetails() {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // for later: sizes
   const [selectedSize, setSelectedSize] = useState(null);
+  const [sizeError, setSizeError] = useState("");
 
   const fallback = "https://via.placeholder.com/900x1100?text=Product+Image";
 
   useEffect(() => {
     setLoading(true);
+    setSelectedSize(null);
+    setSizeError("");
+
     getProductById(id)
       .then(setProduct)
       .finally(() => setLoading(false));
@@ -30,9 +33,22 @@ export default function ProductDetails() {
   }, [product]);
 
   // Demo sizes (until backend/product data includes sizes)
-  const sizes = product?.sizes?.length
-    ? product.sizes
-    : ["S", "M", "L", "XL"];
+  const sizes = product?.sizes?.length ? product.sizes : ["S", "M", "L", "XL"];
+
+  const canAdd = Boolean(selectedSize);
+
+  function handleAddToCart() {
+    if (!selectedSize) {
+      setSizeError("Please select a size before adding to cart.");
+      return;
+    }
+
+    setSizeError("");
+
+    // IMPORTANT: CartContext expects { ...product, selectedSize }
+    addToCart(product, selectedSize);
+    navigate("/cart");
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -99,10 +115,12 @@ export default function ProductDetails() {
                 </p>
               </div>
 
-              {/* small tag */}
-              <span className="px-3 py-1 rounded-full text-[11px] font-black bg-green-50 text-green-800 border border-green-100">
-                Trending
-              </span>
+              {selectedSize ? (
+                <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-green-50 text-green-800 border border-green-100 text-xs font-black">
+                  <HiCheckCircle className="w-4 h-4" />
+                  {selectedSize}
+                </span>
+              ) : null}
             </div>
 
             <p className="mt-4 text-sm text-gray-700 leading-relaxed">
@@ -111,7 +129,23 @@ export default function ProductDetails() {
 
             {/* Sizes */}
             <div className="mt-6">
-              <p className="text-sm font-black text-gray-900">Select size</p>
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-black text-gray-900">Select size</p>
+
+                {!selectedSize ? (
+                  <span className="text-xs font-bold text-gray-500">
+                    Required
+                  </span>
+                ) : (
+                  <span className="text-xs font-bold text-gray-500">
+                    Selected:{" "}
+                    <span className="text-gray-800 font-black">
+                      {selectedSize}
+                    </span>
+                  </span>
+                )}
+              </div>
+
               <div className="mt-3 flex flex-wrap gap-2">
                 {sizes.map((s) => {
                   const active = selectedSize === s;
@@ -119,7 +153,10 @@ export default function ProductDetails() {
                     <button
                       key={s}
                       type="button"
-                      onClick={() => setSelectedSize(s)}
+                      onClick={() => {
+                        setSelectedSize(s);
+                        setSizeError("");
+                      }}
                       className={
                         active
                           ? "px-4 py-2 rounded-xl bg-gray-900 text-white font-black text-sm border border-gray-900"
@@ -131,31 +168,30 @@ export default function ProductDetails() {
                   );
                 })}
               </div>
+
+              {sizeError ? (
+                <p className="mt-3 text-xs font-bold text-red-600">
+                  {sizeError}
+                </p>
+              ) : null}
             </div>
 
             {/* Actions */}
             <div className="mt-7 flex flex-col sm:flex-row gap-3">
               <button
-                className="flex-1 inline-flex items-center justify-center gap-2 bg-gradient-to-r from-green-600 to-green-700 text-white py-3 rounded-xl font-black text-sm hover:from-green-700 hover:to-green-800 transition shadow-md"
-                onClick={() => {
-                  // store size with cart item for later (safe even if you don’t use it yet)
-                  addToCart({ ...product, selectedSize });
-                  navigate("/cart");
-                }}
+                type="button"
+                disabled={!canAdd}
+                onClick={handleAddToCart}
+                className={`flex-1 inline-flex items-center justify-center gap-2 py-3 rounded-xl font-black text-sm transition shadow-md ${
+                  canAdd
+                    ? "bg-gradient-to-r from-green-600 to-green-700 text-white hover:from-green-700 hover:to-green-800"
+                    : "bg-gray-100 text-gray-400 border border-gray-200 shadow-none cursor-not-allowed"
+                }`}
               >
                 <HiShoppingCart className="w-5 h-5" />
-                Add to Cart
+                {canAdd ? "Add to Cart" : "Select size to continue"}
               </button>
-
-              <Link
-                to="/shop"
-                className="flex-1 inline-flex items-center justify-center py-3 rounded-xl border border-gray-200 bg-white font-black text-sm text-gray-900 hover:bg-gray-50 transition"
-              >
-                Continue Shopping
-              </Link>
             </div>
-
-      
           </div>
         </div>
       )}

@@ -47,8 +47,8 @@ export default function Cart() {
           <div className="space-y-6">
             {/* Cart Items */}
             <div className="bg-white rounded-2xl border border-gray-200 divide-y divide-gray-100">
-              {items.map(({ product, qty }) => (
-                <div key={product.id} className="p-4 sm:p-6 flex gap-4">
+              {items.map(({ key, product, qty, selectedSize }) => (
+                <div key={key} className="p-4 sm:p-6 flex gap-4">
                   <img
                     src={product.image}
                     alt={product.name}
@@ -58,6 +58,14 @@ export default function Cart() {
                     <h4 className="font-black text-gray-900 text-lg mb-1 truncate">
                       {product.name}
                     </h4>
+
+                    {selectedSize ? (
+                      <p className="text-xs font-bold text-gray-500 mb-1">
+                        Size:{" "}
+                        <span className="text-gray-700">{selectedSize}</span>
+                      </p>
+                    ) : null}
+
                     <p className="text-green-700 font-black text-xl mb-3">
                       ₦{product.price.toLocaleString()}
                     </p>
@@ -65,7 +73,7 @@ export default function Cart() {
                     <div className="flex items-center gap-3">
                       <div className="flex items-center gap-2 border border-gray-200 rounded-lg">
                         <button
-                          onClick={() => decrement(product.id)}
+                          onClick={() => decrement(key)}
                           className="w-8 h-8 flex items-center justify-center font-bold text-gray-700 hover:bg-gray-50 transition-all duration-300"
                         >
                           -
@@ -74,7 +82,7 @@ export default function Cart() {
                           {qty}
                         </span>
                         <button
-                          onClick={() => increment(product.id)}
+                          onClick={() => increment(key)}
                           className="w-8 h-8 flex items-center justify-center font-bold text-gray-700 hover:bg-gray-50 transition-all duration-300"
                         >
                           +
@@ -82,7 +90,7 @@ export default function Cart() {
                       </div>
 
                       <button
-                        onClick={() => removeFromCart(product.id)}
+                        onClick={() => removeFromCart(key)}
                         className="px-4 py-2 text-sm font-bold text-red-600 hover:bg-red-50 rounded-lg transition-all duration-300"
                       >
                         Remove

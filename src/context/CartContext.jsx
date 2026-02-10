@@ -1,11 +1,14 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
 const CartContext = createContext();
-
 const STORAGE_KEY = "cart_items_v1";
 
+// helper: unique key per cart line (product + size)
+function lineKey(productId, selectedSize) {
+  return `${productId}__${selectedSize}`;
+}
+
 export function CartProvider({ children }) {
-  // Load initial cart from localStorage (runs once)
   const [items, setItems] = useState(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -15,45 +18,54 @@ export function CartProvider({ children }) {
     }
   });
 
-  // Persist cart to localStorage whenever it changes
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-    } catch {
-      // ignore storage errors
-    }
+    } catch {}
   }, [items]);
 
-  function addToCart(product) {
+  // ✅ MUST include size (MVP rule)
+  function addToCart(product, selectedSize) {
+    const size = String(selectedSize || "").trim();
+
+    if (!product?.id) throw new Error("Invalid product.");
+    if (!size) throw new Error("Please select a size first.");
+
+    const key = lineKey(product.id, size);
+
     setItems((prev) => {
-      const found = prev.find((x) => x.product.id === product.id);
+      const found = prev.find((x) => x.key === key);
       if (found) {
-        return prev.map((x) =>
-          x.product.id === product.id ? { ...x, qty: x.qty + 1 } : x
-        );
+        return prev.map((x) => (x.key === key ? { ...x, qty: x.qty + 1 } : x));
       }
-      return [...prev, { product, qty: 1 }];
+
+      return [
+        ...prev,
+        {
+          key,
+          product,
+          selectedSize: size,
+          qty: 1,
+        },
+      ];
     });
   }
 
-  function removeFromCart(productId) {
-    setItems((prev) => prev.filter((x) => x.product.id !== productId));
+  // ✅ remove one line item (by key)
+  function removeFromCart(key) {
+    setItems((prev) => prev.filter((x) => x.key !== key));
   }
 
-  function increment(productId) {
+  function increment(key) {
     setItems((prev) =>
-      prev.map((x) =>
-        x.product.id === productId ? { ...x, qty: x.qty + 1 } : x
-      )
+      prev.map((x) => (x.key === key ? { ...x, qty: x.qty + 1 } : x))
     );
   }
 
-  function decrement(productId) {
+  function decrement(key) {
     setItems((prev) =>
       prev
-        .map((x) =>
-          x.product.id === productId ? { ...x, qty: x.qty - 1 } : x
-        )
+        .map((x) => (x.key === key ? { ...x, qty: x.qty - 1 } : x))
         .filter((x) => x.qty > 0)
     );
   }

@@ -18,10 +18,10 @@ export default function Checkout() {
 
   const [placing, setPlacing] = useState(false);
 
-  // ✅ NEW: success modal state
+  // ✅ Success modal state
   const [showSuccess, setShowSuccess] = useState(false);
 
-  // ✅ OPTIONAL: stop page scroll when modal is open
+  // ✅ Optional: stop scroll when modal is open
   useEffect(() => {
     document.body.style.overflow = showSuccess ? "hidden" : "";
     return () => (document.body.style.overflow = "");
@@ -59,11 +59,12 @@ export default function Checkout() {
 
     setPlacing(true);
 
+    // MVP: simulate processing
     setTimeout(() => {
       clearCart();
       setPlacing(false);
 
-      // ✅ CHANGED: show popup instead of navigating to /order-success
+      // ✅ show popup instead of navigating to /order-success
       setShowSuccess(true);
     }, 800);
   }
@@ -233,7 +234,6 @@ export default function Checkout() {
               "Place Order"
             )}
           </button>
-
         </form>
 
         {/* Summary */}
@@ -242,18 +242,28 @@ export default function Checkout() {
             Order Summary
           </h3>
 
+          {/* ✅ FIXED: correct key + size display (no duplicates) */}
           <div className="flex flex-col gap-3">
-            {items.map(({ product, qty }) => (
+            {items.map(({ key, product, qty, selectedSize }) => (
               <div
-                key={product.id}
+                key={key}
                 className="flex items-start justify-between gap-4 p-3 rounded-xl bg-gray-50 border border-gray-100"
               >
                 <div className="flex flex-col gap-1">
                   <p className="text-sm font-extrabold text-gray-900">
                     {product.name}
                   </p>
-                  <p className="text-xs font-bold text-gray-500">Qty: {qty}</p>
+
+                  <p className="text-xs font-bold text-gray-500 flex flex-wrap items-center gap-2">
+                    <span>Qty: {qty}</span>
+                    {selectedSize ? (
+                      <span className="px-2 py-0.5 rounded-full bg-white border border-gray-200 text-gray-700">
+                        Size: {selectedSize}
+                      </span>
+                    ) : null}
+                  </p>
                 </div>
+
                 <p className="text-sm font-black text-gray-900">
                   ₦{(product.price * qty).toLocaleString()}
                 </p>
@@ -315,8 +325,8 @@ export default function Checkout() {
                   Order Confirmed 🎉
                 </h3>
                 <p className="mt-1 text-sm text-gray-700 leading-relaxed">
-                  Your order has been placed successfully. We’ll contact you with
-                  delivery updates.
+                  Your order has been placed successfully. We’ll contact you
+                  with delivery updates.
                 </p>
               </div>
             </div>
