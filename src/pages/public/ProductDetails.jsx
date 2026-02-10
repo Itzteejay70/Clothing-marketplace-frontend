@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
-import { Link, useParams, useNavigate } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { getProductById } from "../../services/productService.js";
 import { useCart } from "../../context/CartContext";
+import { HiArrowLeft, HiShoppingCart } from "react-icons/hi";
 
 export default function ProductDetails() {
   const { id } = useParams();
@@ -11,7 +12,10 @@ export default function ProductDetails() {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  const fallback = "https://via.placeholder.com/800x900?text=Product+Image";
+  // for later: sizes
+  const [selectedSize, setSelectedSize] = useState(null);
+
+  const fallback = "https://via.placeholder.com/900x1100?text=Product+Image";
 
   useEffect(() => {
     setLoading(true);
@@ -20,74 +24,138 @@ export default function ProductDetails() {
       .finally(() => setLoading(false));
   }, [id]);
 
+  const priceText = useMemo(() => {
+    if (!product?.price) return "";
+    return `₦${Number(product.price).toLocaleString()}`;
+  }, [product]);
+
+  // Demo sizes (until backend/product data includes sizes)
+  const sizes = product?.sizes?.length
+    ? product.sizes
+    : ["S", "M", "L", "XL"];
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-7">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
       <div className="flex items-center gap-3">
         <Link
           to="/shop"
-          className="w-10 h-10 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 flex items-center justify-center font-black text-gray-800 transition"
+          className="w-10 h-10 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 flex items-center justify-center transition"
           aria-label="Back to Shop"
         >
-          ‹
+          <HiArrowLeft className="w-5 h-5 text-gray-800" />
         </Link>
 
-        <div className="flex-1">
-          <h2 className="text-lg sm:text-xl font-black text-gray-900">
-            Product Details
-          </h2>
-          <div className="h-px bg-gray-100 mt-2" />
-        </div>
+        <h2 className="text-xl sm:text-2xl font-black text-gray-900">
+          Product Details
+        </h2>
+
+        <div className="flex-1 h-px bg-gray-200 ml-2" />
       </div>
 
-      {/* Body */}
       {loading ? (
-        <div className="mt-8 text-sm font-bold text-gray-600">
-          Loading product...
+        <div className="mt-10 grid gap-6 lg:grid-cols-2">
+          <div className="rounded-2xl bg-gray-100 animate-pulse h-[420px]" />
+          <div className="rounded-2xl bg-white border border-gray-100 p-6">
+            <div className="h-7 w-2/3 bg-gray-100 rounded animate-pulse" />
+            <div className="h-5 w-1/3 bg-gray-100 rounded mt-4 animate-pulse" />
+            <div className="h-20 bg-gray-100 rounded mt-6 animate-pulse" />
+            <div className="h-11 bg-gray-100 rounded mt-6 animate-pulse" />
+          </div>
         </div>
       ) : !product ? (
-        <div className="mt-8 text-sm font-bold text-gray-600">
-          Product not found.
+        <div className="mt-10 rounded-2xl border border-gray-100 bg-white p-6">
+          <p className="text-gray-700 font-bold">Product not found.</p>
+          <Link
+            to="/shop"
+            className="inline-flex mt-4 items-center justify-center px-4 py-2 rounded-xl bg-green-600 text-white font-black text-sm hover:bg-green-700 transition"
+          >
+            Back to Shop
+          </Link>
         </div>
       ) : (
-        <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
+        <div className="mt-8 grid gap-6 lg:grid-cols-2">
           {/* Image */}
-          <div className="border border-gray-100 rounded-2xl overflow-hidden bg-gray-100 h-[420px] shadow-sm">
-            <img
-              src={product.image}
-              alt={product.name}
-              onError={(e) => (e.currentTarget.src = fallback)}
-              className="w-full h-full object-cover block"
-            />
+          <div className="rounded-2xl border border-gray-100 bg-white overflow-hidden shadow-sm">
+            <div className="bg-gray-100">
+              <img
+                src={product.image}
+                alt={product.name}
+                onError={(e) => (e.currentTarget.src = fallback)}
+                className="w-full h-[420px] sm:h-[520px] object-cover"
+              />
+            </div>
           </div>
 
           {/* Info */}
-          <div className="bg-white border border-gray-100 rounded-2xl p-5 sm:p-6 shadow-sm">
-            <h1 className="text-xl sm:text-2xl font-black text-gray-900">
-              {product.name}
-            </h1>
+          <div className="rounded-2xl border border-gray-100 bg-white shadow-sm p-6">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h1 className="text-2xl sm:text-3xl font-black text-gray-900 leading-tight">
+                  {product.name}
+                </h1>
+                <p className="mt-2 text-xl font-black text-green-700">
+                  {priceText}
+                </p>
+              </div>
 
-            <p className="mt-2 text-lg font-black text-green-700">
-              ₦{Number(product.price).toLocaleString()}
-            </p>
+              {/* small tag */}
+              <span className="px-3 py-1 rounded-full text-[11px] font-black bg-green-50 text-green-800 border border-green-100">
+                Trending
+              </span>
+            </div>
 
             <p className="mt-4 text-sm text-gray-700 leading-relaxed">
               {product.description || "Product description will appear here."}
             </p>
 
-            <div className="mt-6 flex flex-col sm:flex-row gap-3">
+            {/* Sizes */}
+            <div className="mt-6">
+              <p className="text-sm font-black text-gray-900">Select size</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {sizes.map((s) => {
+                  const active = selectedSize === s;
+                  return (
+                    <button
+                      key={s}
+                      type="button"
+                      onClick={() => setSelectedSize(s)}
+                      className={
+                        active
+                          ? "px-4 py-2 rounded-xl bg-gray-900 text-white font-black text-sm border border-gray-900"
+                          : "px-4 py-2 rounded-xl bg-white text-gray-900 font-black text-sm border border-gray-200 hover:bg-gray-50"
+                      }
+                    >
+                      {s}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="mt-7 flex flex-col sm:flex-row gap-3">
               <button
-                type="button"
-                className="w-full sm:w-auto sm:flex-1 bg-gradient-to-r from-green-600 to-green-700 text-white py-3 rounded-xl font-black text-sm hover:from-green-700 hover:to-green-800 transition shadow-md"
+                className="flex-1 inline-flex items-center justify-center gap-2 bg-gradient-to-r from-green-600 to-green-700 text-white py-3 rounded-xl font-black text-sm hover:from-green-700 hover:to-green-800 transition shadow-md"
                 onClick={() => {
-                  addToCart(product);
+                  // store size with cart item for later (safe even if you don’t use it yet)
+                  addToCart({ ...product, selectedSize });
                   navigate("/cart");
                 }}
               >
+                <HiShoppingCart className="w-5 h-5" />
                 Add to Cart
               </button>
+
+              <Link
+                to="/shop"
+                className="flex-1 inline-flex items-center justify-center py-3 rounded-xl border border-gray-200 bg-white font-black text-sm text-gray-900 hover:bg-gray-50 transition"
+              >
+                Continue Shopping
+              </Link>
             </div>
 
+      
           </div>
         </div>
       )}
