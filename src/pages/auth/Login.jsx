@@ -39,11 +39,11 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-100 via-gray-50 to-green-50 flex items-center justify-center p-4">
       <div className="w-full max-w-xs">
-        {/* Brand */}
-        <div className="text-center mb-6">
-          <h1 className="text-2xl font-black text-gray-800">
-            block<span className="text-green-600">234</span>
-          </h1>
+        {/* Brand icon */}
+           <div className="text-center mb-6">
+          <Link to="/" aria-label="Home">
+            <img src="/Bg.PNG" alt="Logo" className="mx-auto h-40 w-auto" />
+          </Link>
         </div>
 
         {/* Title */}
