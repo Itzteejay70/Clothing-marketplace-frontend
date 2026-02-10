@@ -23,18 +23,8 @@ export default function FeaturedBrands() {
             className="inline-flex items-center gap-2 bg-green-700 hover:bg-green-800 text-white px-4 py-2 rounded-lg font-black text-xs uppercase tracking-wide transition-all duration-300 whitespace-nowrap"
           >
             View All
-            <svg
-              className="w-4 h-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={3}
-                d="M9 5l7 7-7 7"
-              />
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
             </svg>
           </Link>
         </div>
@@ -45,7 +35,7 @@ export default function FeaturedBrands() {
             <Link
               key={brand.id}
               to="/brands"
-              className="group bg-white border border-gray-100 rounded-xl h-24 flex items-center justify-center p-6 hover:border-green-200 hover:shadow-lg transition-all duration-300 animate-scale-in"
+              className="group bg-white border border-gray-100 rounded-xl h-24 flex items-center justify-center p-6 hover:border-green-200 hover:shadow-lg transition-all duration-300"
               style={{ animationDelay: `${index * 0.05}s` }}
             >
               <img
