@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { getProductById } from "../../services/productService.js";
 import { useCart } from "../../context/CartContext";
 import { HiArrowLeft, HiShoppingCart, HiCheckCircle } from "react-icons/hi";
@@ -7,11 +7,14 @@ import { HiArrowLeft, HiShoppingCart, HiCheckCircle } from "react-icons/hi";
 export default function ProductDetails() {
   const { id } = useParams();
   const { addToCart } = useCart();
-  const navigate = useNavigate();
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // ✅ toast
+  const [toast, setToast] = useState("");
+
+  // sizes
   const [selectedSize, setSelectedSize] = useState(null);
   const [sizeError, setSizeError] = useState("");
 
@@ -21,18 +24,29 @@ export default function ProductDetails() {
     setLoading(true);
     setSelectedSize(null);
     setSizeError("");
+    setToast("");
 
     getProductById(id)
       .then(setProduct)
       .finally(() => setLoading(false));
   }, [id]);
 
+  // ✅ cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (window.__cartToastTimer) {
+        clearTimeout(window.__cartToastTimer);
+        window.__cartToastTimer = null;
+      }
+    };
+  }, []);
+
   const priceText = useMemo(() => {
     if (!product?.price) return "";
     return `₦${Number(product.price).toLocaleString()}`;
   }, [product]);
 
-  // Demo sizes (until backend/product data includes sizes)
+  // Demo sizes (until backend includes sizes)
   const sizes = product?.sizes?.length ? product.sizes : ["S", "M", "L", "XL"];
 
   const canAdd = Boolean(selectedSize);
@@ -45,9 +59,20 @@ export default function ProductDetails() {
 
     setSizeError("");
 
-    // IMPORTANT: CartContext expects { ...product, selectedSize }
-    addToCart(product, selectedSize);
-    navigate("/cart");
+    try {
+      // ✅ CartContext: addToCart(product, selectedSize)
+      addToCart(product, selectedSize);
+
+      // ✅ show toast for 3s
+      setToast("Added to cart ✅");
+
+      window.clearTimeout(window.__cartToastTimer);
+      window.__cartToastTimer = window.setTimeout(() => {
+        setToast("");
+      }, 3000);
+    } catch (err) {
+      setSizeError(err?.message || "Unable to add to cart.");
+    }
   }
 
   return (
@@ -156,6 +181,7 @@ export default function ProductDetails() {
                       onClick={() => {
                         setSelectedSize(s);
                         setSizeError("");
+                        setToast("");
                       }}
                       className={
                         active
@@ -192,6 +218,16 @@ export default function ProductDetails() {
                 {canAdd ? "Add to Cart" : "Select size to continue"}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ✅ Toast */}
+      {toast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50">
+          <div className="px-5 py-3 rounded-xl bg-gray-900 text-white font-black text-sm shadow-2xl flex items-center gap-2">
+            <HiCheckCircle className="w-5 h-5 text-green-400" />
+            {toast}
           </div>
         </div>
       )}
