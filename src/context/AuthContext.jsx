@@ -4,12 +4,11 @@ const AuthContext = createContext();
 
 const USERS_KEY = "users_v1";
 const SESSION_KEY = "session_user_v1";
-const HAS_ACCOUNT_KEY = "cm_has_account_v1"; // ✅ add this
+const HAS_ACCOUNT_KEY = "cm_has_account_v1";
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
 
-  // Load session on app start
   useEffect(() => {
     try {
       const saved = localStorage.getItem(SESSION_KEY);
@@ -19,7 +18,6 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-  // Persist session when user changes
   useEffect(() => {
     try {
       if (user) localStorage.setItem(SESSION_KEY, JSON.stringify(user));
@@ -49,39 +47,55 @@ export function AuthProvider({ children }) {
       id: crypto?.randomUUID?.() || String(Date.now()),
       fullName,
       email,
-      password, // MVP only (not secure). Backend will handle this later.
+      password,
     };
 
     saveUsers([...users, newUser]);
 
-    // Auto login after register (optional)
-    setUser({ id: newUser.id, fullName: newUser.fullName, email: newUser.email });
+    setUser({
+      id: newUser.id,
+      fullName: newUser.fullName,
+      email: newUser.email,
+      role: "public",
+    });
 
-    // ✅ mark user as "has account" (for returning user popup)
     localStorage.setItem(HAS_ACCOUNT_KEY, "true");
   }
 
   function login({ email, password }) {
     const users = getUsers();
     const found = users.find(
-      (u) =>
-        u.email.toLowerCase() === email.toLowerCase() &&
-        u.password === password
+      (u) => u.email.toLowerCase() === email.toLowerCase() && u.password === password
     );
     if (!found) throw new Error("Invalid email or password.");
 
-    setUser({ id: found.id, fullName: found.fullName, email: found.email });
+    setUser({
+      id: found.id,
+      fullName: found.fullName,
+      email: found.email,
+      role: "public",
+    });
 
-    // ✅ mark user as "has account"
     localStorage.setItem(HAS_ACCOUNT_KEY, "true");
   }
 
+  // ✅ Vendor login: just sets session (password validation happens in VendorLogin page)
+  function vendorLogin({ email, fullName }) {
+    setUser({
+      id: "vendor",
+      fullName: fullName || "Vendor User",
+      email,
+      role: "vendor",
+    });
+  }
+
+  // ✅ Logout
   function logout() {
     setUser(null);
   }
 
   return (
-    <AuthContext.Provider value={{ user, register, login, logout }}>
+    <AuthContext.Provider value={{ user, register, login, vendorLogin, logout }}>
       {children}
     </AuthContext.Provider>
   );

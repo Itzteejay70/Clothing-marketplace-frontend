@@ -10,6 +10,7 @@ function AppContent() {
 
   const hideNavbar =
     path.startsWith("/admin") ||
+    path.startsWith("/vendor") ||
     path.startsWith("/login") ||
     path.startsWith("/register") ||
     path.startsWith("/forgot-password");

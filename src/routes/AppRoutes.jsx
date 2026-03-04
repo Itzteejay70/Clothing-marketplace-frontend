@@ -24,6 +24,17 @@ import Orders from "../pages/admin/Orders";
 import Users from "../pages/admin/Users";
 import Settings from "../pages/admin/Settings";
 
+//Brands imports
+import VendorLogin from "../pages/auth/VendorLogin";
+import VendorRoute from "../components/common/VendorRoute";
+import VendorLayout from "../components/layout/VendorLayout";
+import VendorDashboard from "../pages/vendor/Dashboard";
+import VendorProducts from "../pages/vendor/Products";
+import VendorOrders from "../pages/vendor/Orders";
+import VendorPayouts from "../pages/vendor/Payouts";
+import VendorSettings from "../pages/vendor/Settings";
+
+
 export default function AppRoutes() {
   return (
     <Routes>
@@ -71,6 +82,25 @@ export default function AppRoutes() {
         <Route path="users" element={<Users />} />
         <Route path="settings" element={<Settings />} />
       </Route>
+    
+    <Route path="/vendor/login" element={<VendorLogin />} />
+     <Route
+        path="/vendor"
+        element={
+          <VendorRoute>
+            <VendorLayout />
+          </VendorRoute>
+        }
+      >
+        <Route index element={<Navigate to="dashboard" replace />} />
+        <Route path="dashboard" element={<VendorDashboard />} />
+        <Route path="products" element={<VendorProducts />} />
+        <Route path="orders" element={<VendorOrders />} />
+        <Route path="payouts" element={<VendorPayouts />} />
+        <Route path="settings" element={<VendorSettings />} />
+        <Route path="products" element={<VendorProducts />} />
+</Route>
+
     </Routes>
   );
 }
