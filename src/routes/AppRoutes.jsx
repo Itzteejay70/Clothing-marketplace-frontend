@@ -23,6 +23,11 @@ import ApproveVendors from "../pages/admin/ApproveVendors";
 import Orders from "../pages/admin/Orders";
 import Users from "../pages/admin/Users";
 import Settings from "../pages/admin/Settings";
+import Analytics from "../pages/admin/Analytics";
+import AllProducts from "../pages/admin/AllProducts";
+import Categories from "../pages/admin/Categories";
+import PaymentReports from "../pages/admin/PaymentReports";
+import Reports from "../pages/admin/Reports";
 
 //Brands imports
 import VendorLogin from "../pages/auth/VendorLogin";
@@ -52,7 +57,8 @@ export default function AppRoutes() {
       <Route path="/forgot-password" element={<ForgotPassword />} />
 
       {/* Protected Routes */}
-      <Route path="/profile"
+      <Route
+        path="/profile"
         element={
           <ProtectedRoute>
             <Profile />
@@ -67,7 +73,6 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
-     
 
       {/* Admin Login Route */}
       <Route path="/admin/login" element={<AdminLogin />} />
@@ -81,6 +86,11 @@ export default function AppRoutes() {
         <Route path="orders" element={<Orders />} />
         <Route path="users" element={<Users />} />
         <Route path="settings" element={<Settings />} />
+        <Route path="analytics" element={<Analytics />} />
+        <Route path="products" element={<AllProducts />} />
+        <Route path="categories" element={<Categories />} />
+        <Route path="payments" element={<PaymentReports />} />
+        <Route path="reports" element={<Reports />} />
       </Route>
     
     <Route path="/vendor/login" element={<VendorLogin />} />
