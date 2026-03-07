@@ -22,16 +22,20 @@ import {
 function HeroCard() {
   return (
     <div className="hero-card">
+      <div className="hero-badge">Marketplace Overview</div>
       <div className="hero-left">
         <div className="hero-content">
-          <h1 className="hero-title">Monitor Your Platform in Real Time</h1>
+          <h1 className="hero-title">
+            Curate What Gets Listed on the Platform
+          </h1>
           <p className="hero-sub">
-            Track product listings, manage approved items, and stay updated on
-            sales activity happening across your platform.
+            Every product that goes live passes through you. Review vendor
+            submissions, approve quality items, and reject anything that doesn't
+            meet your standards.
           </p>
           <div className="hero-actions">
-            <button className="hero-btn-primary">View Sales</button>
-            <button className="hero-btn-ghost">Manage Products</button>
+            <button className="hero-btn-primary">Start Reviewing</button>
+            <button className="hero-btn-ghost">View All Submissions</button>
           </div>
         </div>
       </div>
@@ -505,7 +509,7 @@ export default function ApproveProducts() {
           position: relative; overflow: hidden;
           width: 100%; border-radius: 20px;
           background: #0f3318;
-          margin-bottom: 22px; height: 320px;
+          margin-bottom: 22px; height: 280px;
           animation: fadeUp 0.45s ease-out forwards;
           display: flex;
           border: 1px solid rgba(34,197,94,0.12);
@@ -522,13 +526,14 @@ export default function ApproveProducts() {
           position: relative;
           z-index: 2;
         }
-        .hero-content {
-          max-width: 480px;
-          position: relative;
-          z-index: 1;
-        }
+       .hero-content {
+  max-width: 480px;
+  position: relative;
+  z-index: 1;
+  padding-top: 40px; 
+}
         .hero-title {
-          font-size: 30px;
+          font-size: 24px;
           font-weight: 900;
           color: #fff;
           margin-bottom: 12px;
@@ -541,6 +546,21 @@ export default function ApproveProducts() {
           margin-bottom: 28px;
           line-height: 1.7;
           max-width: 380px;
+        }
+        .hero-badge {
+          position: absolute;
+          top: 20px;
+          left: 40px;
+          background: rgba(34,197,94,0.05);
+          color: #22c55e;
+          border: 1px solid #22c55e;
+          font-size: 11px;
+          font-weight: 700;
+          padding: 6px 12px;
+          border-radius: 10px;
+          z-index: 3;
+          text-align: center;
+          box-shadow: 0 0 12px rgba(34,197,94,0.5);
         }
         .hero-actions {
           display: flex;
@@ -592,8 +612,26 @@ export default function ApproveProducts() {
           display: flex;
           align-items: center;
           justify-content: center;
+          transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+          cursor: pointer;
         }
-        .hero-right::before {
+        .hero-right:hover {
+          transform: translateY(-15px) scale(1.02);
+          filter: drop-shadow(0 20px 30px rgba(34, 197, 94, 0.3));
+        }
+        .hero-img {
+          width: 90%;
+          height: 90%;
+          object-fit: contain;
+          object-position: center;
+          display: block;
+          filter: drop-shadow(0 8px 40px rgba(0,0,0,0.6));
+          transition: all 0.4s ease;
+        }
+        .hero-right:hover .hero-img {
+          transform: scale(1.08);
+          filter: drop-shadow(0 15px 50px rgba(34, 197, 94, 0.4));
+        }
           content: '';
           position: absolute;
           inset: 0;

@@ -767,7 +767,25 @@ export default function Dashboard() {
         .dash-content { max-width: 1400px; margin: 0 auto; }
 
         /* ── Header ── */
-        .dash-header { margin-bottom: 20px; margin-top: -8px; }
+        .dash-header { 
+          margin-bottom: 20px; margin-top: -8px;
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+        }
+        .dash-header-left { flex: 1; }
+        .dash-header-right { 
+          display: flex; 
+          align-items: center; 
+        }
+        .current-date {
+          font-size: 13px;
+          color: rgba(255,255,255,0.5);
+          background: rgba(255,255,255,0.05);
+          padding: 8px 14px;
+          border-radius: 8px;
+          border: 1px solid rgba(255,255,255,0.08);
+        }
         .dash-header h1 {
           font-size: 22px; font-weight: 700; color: #fff;
           margin: 0 0 4px; letter-spacing: -0.3px;
@@ -1211,8 +1229,22 @@ export default function Dashboard() {
         <div className="dash-content">
           {/* Header */}
           <div className="dash-header fade-up">
-            <h1>Dashboard Overview</h1>
-            <p>Welcome back! Here's what's happening with your store today.</p>
+            <div className="dash-header-left">
+              <h1>Dashboard Overview</h1>
+              <p>
+                Welcome back! Here's what's happening with your store today.
+              </p>
+            </div>
+            <div className="dash-header-right">
+              <span className="current-date">
+                {new Date().toLocaleDateString("en-US", {
+                  weekday: "long",
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })}
+              </span>
+            </div>
           </div>
 
           {/* ── Stat Cards ── */}
