@@ -141,7 +141,7 @@ export default function VendorLogin() {
           </div>
 
           <p className="text-[11px] text-gray-500 text-center">
-            Demo login: vendor@block234.com / Vendor@123
+            Demo login: admin@block234.com / Admin@123
           </p>
         </form>
       </div>
