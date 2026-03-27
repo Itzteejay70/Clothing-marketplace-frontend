@@ -1,940 +1,944 @@
 import { useEffect, useState } from "react";
 import {
-  HiEye,
-  HiTrash,
-  HiUsers,
-  HiSearch,
-  HiFilter,
-  HiChevronDown,
-  HiShoppingCart,
-  HiCurrencyDollar,
-  HiCalendar,
-  HiMail,
-  HiPhone,
-  HiLocationMarker,
-  HiShieldCheck,
-  HiBadgeCheck,
-  HiUserCircle,
-  HiStar,
-  HiTrendingUp,
-  HiClock,
-  HiCheckCircle,
-  HiXCircle,
-  HiX,
-  HiExclamationCircle,
-} from "react-icons/hi";
+  Users,
+  MagnifyingGlass,
+  Eye,
+  Trash,
+  X,
+  Warning,
+  CaretDown,
+  EnvelopeSimple,
+  Phone,
+  MapPin,
+  Calendar,
+  UserCircle,
+  Storefront,
+  CrownSimple,
+  Package,
+  ShieldCheck,
+} from "@phosphor-icons/react";
 
-export default function Users() {
+function useCountUp(target, duration = 700) {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    if (target === 0) {
+      setCount(0);
+      return;
+    }
+    let step = 0;
+    const steps = Math.min(Math.abs(target), 40);
+    const inc = target / steps;
+    let cur = 0;
+    const t = setInterval(
+      () => {
+        step++;
+        cur += inc;
+        setCount(step >= steps ? target : Math.round(cur));
+        if (step >= steps) clearInterval(t);
+      },
+      Math.max(16, Math.floor(duration / steps)),
+    );
+    return () => clearInterval(t);
+  }, [target]);
+  return count;
+}
+
+function StatCards({ total, customers, vendors, active }) {
+  const tot = total || 1;
+  const cards = [
+    {
+      label: "Total Users",
+      value: useCountUp(total),
+      sub: "Registered accounts",
+      trend: `${total} total`,
+      bar: 100,
+    },
+    {
+      label: "Customers",
+      value: useCountUp(customers),
+      sub: "Shopping on platform",
+      trend: `${customers} buyers`,
+      bar: Math.round((customers / tot) * 100),
+    },
+    {
+      label: "Vendors",
+      value: useCountUp(vendors),
+      sub: "Active storefronts",
+      trend: `${vendors} stores`,
+      bar: Math.round((vendors / tot) * 100),
+    },
+    {
+      label: "Active Users",
+      value: useCountUp(active),
+      sub: "Currently active",
+      trend: `${active} online`,
+      bar: Math.round((active / tot) * 100),
+    },
+  ];
+  return (
+    <div className="stats-bar">
+      {cards.map((c, i) => (
+        <div
+          key={i}
+          className="stat-tile fade-up"
+          style={{ animationDelay: `${60 + i * 60}ms` }}
+        >
+          <div className="stat-top-row">
+            <span className="stat-val">{c.value.toLocaleString()}</span>
+            <span className="stat-trend">{c.trend}</span>
+          </div>
+          <div className="stat-label">{c.label}</div>
+          <div className="stat-sub">{c.sub}</div>
+          <div className="stat-bar-track">
+            <div
+              className="stat-bar-fill"
+              style={{ "--bar-w": `${Math.max(c.bar, 2)}%` }}
+            />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+const ROLE_CFG = {
+  customer: {
+    color: "#22c55e",
+    bg: "rgba(34,197,94,0.1)",
+    border: "rgba(34,197,94,0.25)",
+    Icon: UserCircle,
+    label: "Customer",
+  },
+  vendor: {
+    color: "#22c55e",
+    bg: "rgba(34,197,94,0.1)",
+    border: "rgba(34,197,94,0.25)",
+    Icon: Storefront,
+    label: "Vendor",
+  },
+  admin: {
+    color: "#22c55e",
+    bg: "rgba(34,197,94,0.1)",
+    border: "rgba(34,197,94,0.25)",
+    Icon: CrownSimple,
+    label: "Admin",
+  },
+};
+
+function RoleBadge({ role }) {
+  const c = ROLE_CFG[role] || ROLE_CFG.customer;
+  return (
+    <span
+      className="role-badge"
+      style={{
+        color: c.color,
+        background: c.bg,
+        border: `1px solid ${c.border}`,
+      }}
+    >
+      <c.Icon size={10} weight="fill" /> {c.label}
+    </span>
+  );
+}
+function StatusDot({ status }) {
+  const on = status === "active";
+  return (
+    <span
+      className="sdot-wrap"
+      style={{ color: on ? "#22c55e" : "rgba(255,255,255,0.3)" }}
+    >
+      <span
+        className="sdot"
+        style={{ background: on ? "#22c55e" : "rgba(255,255,255,0.2)" }}
+      />
+      {on ? "Active" : "Inactive"}
+    </span>
+  );
+}
+
+function UserCard({ user, onView, onDeleteConfirm, index }) {
+  const initials = user.fullName
+    .split(" ")
+    .map((w) => w[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+  return (
+    <div
+      className="user-card fade-up"
+      style={{ animationDelay: `${index * 45}ms` }}
+    >
+      <div className="card-header">
+        <div className="card-header-badges">
+          <RoleBadge role={user.role} />
+          <StatusDot status={user.status} />
+        </div>
+      </div>
+      <div className="card-identity">
+        <div className="card-avatar">
+          <span className="card-initials">{initials}</span>
+        </div>
+        <div>
+          <div className="card-name">{user.fullName}</div>
+          <div className="card-email">{user.email}</div>
+          <div className="card-active">{user.lastActive}</div>
+        </div>
+      </div>
+      <div className="card-body">
+        {user.role === "customer" && (
+          <div className="card-stats">
+            <div className="cs">
+              <div className="cs-label">Orders</div>
+              <div className="cs-val">{user.totalOrders}</div>
+            </div>
+            <div className="cs-div" />
+            <div className="cs">
+              <div className="cs-label">Spent</div>
+              <div className="cs-val">
+                <span className="naira">₦</span>
+                {(user.totalSpent / 1000).toFixed(0)}k
+              </div>
+            </div>
+            <div className="cs-div" />
+            <div className="cs">
+              <div className="cs-label">Points</div>
+              <div className="cs-val">{user.loyaltyPoints}</div>
+            </div>
+          </div>
+        )}
+        {user.role === "vendor" && (
+          <div className="vendor-pill">
+            <Storefront size={11} color="#22c55e" weight="fill" />
+            <span>{user.businessName}</span>
+            <span className="vp-right">
+              <Package size={10} /> {user.totalProducts} products
+            </span>
+          </div>
+        )}
+        {user.role === "admin" && (
+          <div className="vendor-pill">
+            <CrownSimple size={11} color="#22c55e" weight="fill" />
+            <span style={{ color: "#22c55e" }}>Platform Administrator</span>
+          </div>
+        )}
+        <div className="card-joined">
+          <Calendar size={10} weight="fill" /> Joined {user.joinedDate}
+        </div>
+        <div className="card-actions">
+          <button className="cbtn cbtn-view" onClick={() => onView(user)}>
+            <Eye size={12} weight="bold" /> View
+          </button>
+          <button
+            className="cbtn cbtn-del"
+            onClick={() => onDeleteConfirm(user)}
+          >
+            <Trash size={12} weight="bold" /> Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function DeleteModal({ user, onClose, onConfirm }) {
+  if (!user) return null;
+  const initials = user.fullName
+    .split(" ")
+    .map((w) => w[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+  return (
+    <div className="overlay" onClick={onClose}>
+      <div className="mbox mbox-sm" onClick={(e) => e.stopPropagation()}>
+        <div style={{ padding: "28px 24px", textAlign: "center" }}>
+          <div className="conf-icon">
+            <Warning size={22} color="#ef4444" weight="fill" />
+          </div>
+          <div className="conf-title">Delete this user?</div>
+          <div className="conf-sub">
+            This will permanently remove <strong>{user.fullName}</strong> and
+            all their data. This cannot be undone.
+          </div>
+          <div className="del-card">
+            <div className="del-av">
+              <span style={{ color: "#22c55e", fontSize: 13, fontWeight: 900 }}>
+                {initials}
+              </span>
+            </div>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 800, color: "#fff" }}>
+                {user.fullName}
+              </div>
+              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)" }}>
+                {user.email}
+              </div>
+            </div>
+          </div>
+          <div className="conf-btns">
+            <button className="mbtn mbtn-ghost" onClick={onClose}>
+              Cancel
+            </button>
+            <button
+              className="mbtn mbtn-del"
+              onClick={() => onConfirm(user.id)}
+            >
+              <Trash size={14} weight="bold" /> Yes, Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function UserModal({ user, onClose, onDeleteConfirm }) {
+  if (!user) return null;
+  const initials = user.fullName
+    .split(" ")
+    .map((w) => w[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+  return (
+    <div className="overlay" onClick={onClose}>
+      <div className="mbox" onClick={(e) => e.stopPropagation()}>
+        {/* FIXED hero — 150px tall, avatar anchored at bottom-left */}
+        <div className="mhero">
+          <div className="mhero-pat" />
+          <div className="mhero-overlay" />
+          <button className="mclose" onClick={onClose}>
+            <X size={14} weight="bold" />
+          </button>
+          <div className="mav-wrap">
+            <div className="mav">
+              <span className="mav-init">{initials}</span>
+            </div>
+          </div>
+        </div>
+        {/* name block — padded down so it clears the avatar that protrudes below hero */}
+        <div className="mname-block">
+          <div className="mfullname">{user.fullName}</div>
+          <div
+            style={{
+              display: "flex",
+              gap: 8,
+              alignItems: "center",
+              marginTop: 6,
+            }}
+          >
+            <RoleBadge role={user.role} />
+            <StatusDot status={user.status} />
+          </div>
+        </div>
+        <div className="mbody">
+          <div className="m2col">
+            <div className="mcell">
+              <div className="mclabel">
+                <EnvelopeSimple size={11} color="#3b82f6" weight="fill" /> Email
+              </div>
+              <div className="mcval">{user.email}</div>
+            </div>
+            <div className="mcell">
+              <div className="mclabel">
+                <Phone size={11} color="#22c55e" weight="fill" /> Phone
+              </div>
+              <div className="mcval">{user.phone}</div>
+            </div>
+          </div>
+          <div className="mcell" style={{ marginBottom: 12 }}>
+            <div className="mclabel">
+              <MapPin size={11} color="#a855f7" weight="fill" /> Address
+            </div>
+            <div className="mcval">{user.address}</div>
+          </div>
+          {user.role === "customer" && (
+            <div className="mstats">
+              <div className="msc">
+                <div className="msc-label">Total Orders</div>
+                <div className="msc-val" style={{ color: "#22c55e" }}>
+                  {user.totalOrders}
+                </div>
+              </div>
+              <div className="msc">
+                <div className="msc-label">Total Spent</div>
+                <div
+                  className="msc-val"
+                  style={{ color: "#3b82f6", fontSize: 13 }}
+                >
+                  <span className="naira">₦</span>
+                  {user.totalSpent.toLocaleString()}
+                </div>
+              </div>
+              <div className="msc">
+                <div className="msc-label">Loyalty Points</div>
+                <div className="msc-val" style={{ color: "#f59e0b" }}>
+                  {user.loyaltyPoints}
+                </div>
+              </div>
+            </div>
+          )}
+          {user.role === "vendor" && (
+            <div className="mcell" style={{ marginBottom: 12 }}>
+              <div className="mclabel">
+                <Storefront size={11} color="#22c55e" weight="fill" /> Business
+              </div>
+              <div className="mcval">
+                {user.businessName} · {user.totalProducts} products
+              </div>
+            </div>
+          )}
+          <div className="m2col">
+            <div className="mcell">
+              <div className="mclabel">
+                <Calendar size={11} weight="fill" /> Joined
+              </div>
+              <div className="mcval">{user.joinedDate}</div>
+            </div>
+            <div className="mcell">
+              <div className="mclabel">Last Active</div>
+              <div className="mcval">{user.lastActive}</div>
+            </div>
+          </div>
+          <div className="mactions">
+            <button className="mbtn mbtn-ghost" onClick={onClose}>
+              Close
+            </button>
+            <button
+              className="mbtn mbtn-del"
+              onClick={() => {
+                onClose();
+                onDeleteConfirm(user);
+              }}
+            >
+              <Trash size={14} weight="bold" /> Delete User
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const INITIAL_USERS = [
+  {
+    id: 1,
+    fullName: "John Doe",
+    email: "john@example.com",
+    phone: "+234 801 234 5678",
+    role: "customer",
+    joinedDate: "2024-01-15",
+    lastActive: "2 hours ago",
+    totalOrders: 24,
+    totalSpent: 1250000,
+    status: "active",
+    address: "123 Main Street, Victoria Island, Lagos",
+    loyaltyPoints: 1250,
+  },
+  {
+    id: 2,
+    fullName: "Jane Smith",
+    email: "jane@example.com",
+    phone: "+234 802 345 6789",
+    role: "vendor",
+    joinedDate: "2024-01-10",
+    lastActive: "1 day ago",
+    totalOrders: 0,
+    totalSpent: 0,
+    status: "active",
+    address: "456 Park Avenue, Wuse 2, Abuja",
+    businessName: "Kicks Store",
+    totalProducts: 45,
+  },
+  {
+    id: 3,
+    fullName: "Mike Johnson",
+    email: "mike@example.com",
+    phone: "+234 803 456 7890",
+    role: "customer",
+    joinedDate: "2024-01-08",
+    lastActive: "30 mins ago",
+    totalOrders: 18,
+    totalSpent: 980000,
+    status: "active",
+    address: "789 Beach Road, Port Harcourt, Rivers State",
+    loyaltyPoints: 980,
+  },
+  {
+    id: 4,
+    fullName: "Sarah Williams",
+    email: "sarah@example.com",
+    phone: "+234 804 567 8901",
+    role: "admin",
+    joinedDate: "2024-01-01",
+    lastActive: "Online now",
+    totalOrders: 0,
+    totalSpent: 0,
+    status: "active",
+    address: "321 Hill View, Ibadan, Oyo State",
+  },
+  {
+    id: 5,
+    fullName: "David Brown",
+    email: "david@example.com",
+    phone: "+234 805 678 9012",
+    role: "customer",
+    joinedDate: "2024-01-12",
+    lastActive: "5 hours ago",
+    totalOrders: 15,
+    totalSpent: 750000,
+    status: "active",
+    address: "567 Admiralty Way, Lekki, Lagos",
+    loyaltyPoints: 750,
+  },
+  {
+    id: 6,
+    fullName: "Grace Okoro",
+    email: "grace@example.com",
+    phone: "+234 806 789 0123",
+    role: "vendor",
+    joinedDate: "2024-01-14",
+    lastActive: "3 days ago",
+    totalOrders: 0,
+    totalSpent: 0,
+    status: "active",
+    address: "890 Allen Avenue, Ikeja, Lagos",
+    businessName: "Fashion Hub NG",
+    totalProducts: 32,
+  },
+  {
+    id: 7,
+    fullName: "Emmanuel Obi",
+    email: "emmanuel@example.com",
+    phone: "+234 807 890 1234",
+    role: "customer",
+    joinedDate: "2023-12-20",
+    lastActive: "1 week ago",
+    totalOrders: 8,
+    totalSpent: 420000,
+    status: "inactive",
+    address: "234 Herbert Macaulay, Yaba, Lagos",
+    loyaltyPoints: 420,
+  },
+  {
+    id: 8,
+    fullName: "Chinedu Eze",
+    email: "chinedu@example.com",
+    phone: "+234 808 901 2345",
+    role: "customer",
+    joinedDate: "2024-01-05",
+    lastActive: "10 mins ago",
+    totalOrders: 32,
+    totalSpent: 1680000,
+    status: "active",
+    address: "678 Opebi Road, Ikeja, Lagos",
+    loyaltyPoints: 1680,
+  },
+  {
+    id: 9,
+    fullName: "Blessing Adeyemi",
+    email: "blessing@example.com",
+    phone: "+234 809 012 3456",
+    role: "vendor",
+    joinedDate: "2024-01-18",
+    lastActive: "2 days ago",
+    totalOrders: 0,
+    totalSpent: 0,
+    status: "active",
+    address: "456 Awolowo Road, Ikoyi, Lagos",
+    businessName: "Street Wear Co",
+    totalProducts: 28,
+  },
+  {
+    id: 10,
+    fullName: "Tunde Bakare",
+    email: "tunde@example.com",
+    phone: "+234 810 123 4567",
+    role: "customer",
+    joinedDate: "2023-11-15",
+    lastActive: "45 mins ago",
+    totalOrders: 42,
+    totalSpent: 2340000,
+    status: "active",
+    address: "123 Banana Island, Ikoyi, Lagos",
+    loyaltyPoints: 2340,
+  },
+  {
+    id: 11,
+    fullName: "Amaka Nwosu",
+    email: "amaka@example.com",
+    phone: "+234 811 234 5678",
+    role: "customer",
+    joinedDate: "2024-01-20",
+    lastActive: "Just now",
+    totalOrders: 5,
+    totalSpent: 285000,
+    status: "active",
+    address: "345 Fola Osibo, Lekki Phase 1, Lagos",
+    loyaltyPoints: 285,
+  },
+  {
+    id: 12,
+    fullName: "Olusegun Peters",
+    email: "olusegun@example.com",
+    phone: "+234 812 345 6789",
+    role: "customer",
+    joinedDate: "2023-12-01",
+    lastActive: "2 weeks ago",
+    totalOrders: 3,
+    totalSpent: 156000,
+    status: "inactive",
+    address: "789 Bourdillon Road, Ikoyi, Lagos",
+    loyaltyPoints: 156,
+  },
+];
+
+export default function UsersPage() {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [deleteConfirmUser, setDeleteConfirmUser] = useState(null);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [roleFilter, setRoleFilter] = useState("all");
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [selectedUser, setSelected] = useState(null);
+  const [deleteTarget, setDelTgt] = useState(null);
+  const [search, setSearch] = useState("");
+  const [roleFilter, setRole] = useState("all");
+  const [statusFilter, setStatus] = useState("all");
 
   useEffect(() => {
-    setLoading(true);
-    // Enhanced mock data with more users
     setTimeout(() => {
-      setUsers([
-        {
-          id: 1,
-          fullName: "John Doe",
-          email: "john@example.com",
-          phone: "+234 801 234 5678",
-          role: "customer",
-          joinedDate: "2024-01-15",
-          lastActive: "2 hours ago",
-          totalOrders: 24,
-          totalSpent: 1250000,
-          status: "active",
-          address: "123 Main Street, Victoria Island, Lagos",
-          loyaltyPoints: 1250,
-          favoriteCategory: "Sneakers",
-        },
-        {
-          id: 2,
-          fullName: "Jane Smith",
-          email: "jane@example.com",
-          phone: "+234 802 345 6789",
-          role: "vendor",
-          joinedDate: "2024-01-10",
-          lastActive: "1 day ago",
-          totalOrders: 0,
-          totalSpent: 0,
-          status: "active",
-          address: "456 Park Avenue, Wuse 2, Abuja",
-          businessName: "Kicks Store",
-          totalProducts: 45,
-        },
-        {
-          id: 3,
-          fullName: "Mike Johnson",
-          email: "mike@example.com",
-          phone: "+234 803 456 7890",
-          role: "customer",
-          joinedDate: "2024-01-08",
-          lastActive: "30 mins ago",
-          totalOrders: 18,
-          totalSpent: 980000,
-          status: "active",
-          address: "789 Beach Road, Port Harcourt, Rivers State",
-          loyaltyPoints: 980,
-          favoriteCategory: "Hoodies",
-        },
-        {
-          id: 4,
-          fullName: "Sarah Williams",
-          email: "sarah@example.com",
-          phone: "+234 804 567 8901",
-          role: "admin",
-          joinedDate: "2024-01-01",
-          lastActive: "Online now",
-          totalOrders: 0,
-          totalSpent: 0,
-          status: "active",
-          address: "321 Hill View, Ibadan, Oyo State",
-        },
-        {
-          id: 5,
-          fullName: "David Brown",
-          email: "david@example.com",
-          phone: "+234 805 678 9012",
-          role: "customer",
-          joinedDate: "2024-01-12",
-          lastActive: "5 hours ago",
-          totalOrders: 15,
-          totalSpent: 750000,
-          status: "active",
-          address: "567 Admiralty Way, Lekki, Lagos",
-          loyaltyPoints: 750,
-          favoriteCategory: "Jackets",
-        },
-        {
-          id: 6,
-          fullName: "Grace Okoro",
-          email: "grace@example.com",
-          phone: "+234 806 789 0123",
-          role: "vendor",
-          joinedDate: "2024-01-14",
-          lastActive: "3 days ago",
-          totalOrders: 0,
-          totalSpent: 0,
-          status: "active",
-          address: "890 Allen Avenue, Ikeja, Lagos",
-          businessName: "Fashion Hub NG",
-          totalProducts: 32,
-        },
-        {
-          id: 7,
-          fullName: "Emmanuel Obi",
-          email: "emmanuel@example.com",
-          phone: "+234 807 890 1234",
-          role: "customer",
-          joinedDate: "2023-12-20",
-          lastActive: "1 week ago",
-          totalOrders: 8,
-          totalSpent: 420000,
-          status: "inactive",
-          address: "234 Herbert Macaulay, Yaba, Lagos",
-          loyaltyPoints: 420,
-          favoriteCategory: "T-Shirts",
-        },
-        {
-          id: 8,
-          fullName: "Chinedu Eze",
-          email: "chinedu@example.com",
-          phone: "+234 808 901 2345",
-          role: "customer",
-          joinedDate: "2024-01-05",
-          lastActive: "10 mins ago",
-          totalOrders: 32,
-          totalSpent: 1680000,
-          status: "active",
-          address: "678 Opebi Road, Ikeja, Lagos",
-          loyaltyPoints: 1680,
-          favoriteCategory: "Sneakers",
-        },
-        {
-          id: 9,
-          fullName: "Blessing Adeyemi",
-          email: "blessing@example.com",
-          phone: "+234 809 012 3456",
-          role: "vendor",
-          joinedDate: "2024-01-18",
-          lastActive: "2 days ago",
-          totalOrders: 0,
-          totalSpent: 0,
-          status: "active",
-          address: "456 Awolowo Road, Ikoyi, Lagos",
-          businessName: "Street Wear Co",
-          totalProducts: 28,
-        },
-        {
-          id: 10,
-          fullName: "Tunde Bakare",
-          email: "tunde@example.com",
-          phone: "+234 810 123 4567",
-          role: "customer",
-          joinedDate: "2023-11-15",
-          lastActive: "45 mins ago",
-          totalOrders: 42,
-          totalSpent: 2340000,
-          status: "active",
-          address: "123 Banana Island, Ikoyi, Lagos",
-          loyaltyPoints: 2340,
-          favoriteCategory: "Sneakers",
-        },
-        {
-          id: 11,
-          fullName: "Amaka Nwosu",
-          email: "amaka@example.com",
-          phone: "+234 811 234 5678",
-          role: "customer",
-          joinedDate: "2024-01-20",
-          lastActive: "Just now",
-          totalOrders: 5,
-          totalSpent: 285000,
-          status: "active",
-          address: "345 Fola Osibo, Lekki Phase 1, Lagos",
-          loyaltyPoints: 285,
-          favoriteCategory: "Hoodies",
-        },
-        {
-          id: 12,
-          fullName: "Olusegun Peters",
-          email: "olusegun@example.com",
-          phone: "+234 812 345 6789",
-          role: "customer",
-          joinedDate: "2023-12-01",
-          lastActive: "2 weeks ago",
-          totalOrders: 3,
-          totalSpent: 156000,
-          status: "inactive",
-          address: "789 Bourdillon Road, Ikoyi, Lagos",
-          loyaltyPoints: 156,
-          favoriteCategory: "Jackets",
-        },
-      ]);
+      setUsers(INITIAL_USERS);
       setLoading(false);
-    }, 1000);
+    }, 900);
   }, []);
 
-  const filteredUsers = users.filter((user) => {
-    const matchesSearch =
-      user.fullName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.phone.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesRole = roleFilter === "all" || user.role === roleFilter;
-    const matchesStatus =
-      statusFilter === "all" || user.status === statusFilter;
+  const deleteUser = (id) => {
+    setUsers((p) => p.filter((u) => u.id !== id));
+    setDelTgt(null);
+    setSelected(null);
+  };
 
-    return matchesSearch && matchesRole && matchesStatus;
+  const filtered = users.filter((u) => {
+    const s = search.toLowerCase();
+    return (
+      (u.fullName.toLowerCase().includes(s) ||
+        u.email.toLowerCase().includes(s) ||
+        u.phone.toLowerCase().includes(s)) &&
+      (roleFilter === "all" || u.role === roleFilter) &&
+      (statusFilter === "all" || u.status === statusFilter)
+    );
   });
 
-  const deleteUser = (userId) => {
-    setUsers(users.filter((u) => u.id !== userId));
-    setDeleteConfirmUser(null);
-    setSelectedUser(null);
-  };
-
-  const getRoleBadgeColor = (role) => {
-    const colors = {
-      admin: "bg-purple-50 text-purple-700 border-purple-200",
-      vendor: "bg-blue-50 text-blue-700 border-blue-200",
-      customer: "bg-green-50 text-green-700 border-green-200",
-    };
-    return colors[role] || "bg-gray-50 text-gray-700 border-gray-200";
-  };
-
-  const getStatusBadge = (status) => {
-    return status === "active"
-      ? "bg-green-50 text-green-700 border-green-200"
-      : "bg-gray-50 text-gray-500 border-gray-200";
-  };
-
-  const getInitials = (name) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase();
-  };
-
-  const getAvatarColor = (role) => {
-    const colors = {
-      admin: "from-purple-500 to-purple-600",
-      vendor: "from-blue-500 to-blue-600",
-      customer: "from-green-500 to-green-600",
-    };
-    return colors[role] || "from-gray-500 to-gray-600";
-  };
-
-  const roleCounts = {
+  const customers = users.filter((u) => u.role === "customer").length;
+  const vendors = users.filter((u) => u.role === "vendor").length;
+  const active = users.filter((u) => u.status === "active").length;
+  const roleCnt = {
     all: users.length,
-    customer: users.filter((u) => u.role === "customer").length,
-    vendor: users.filter((u) => u.role === "vendor").length,
+    customer: customers,
+    vendor: vendors,
     admin: users.filter((u) => u.role === "admin").length,
   };
 
-  const statusCounts = {
-    all: users.length,
-    active: users.filter((u) => u.status === "active").length,
-    inactive: users.filter((u) => u.status === "inactive").length,
-  };
-
-  const totalCustomers = users.filter((u) => u.role === "customer").length;
-  const totalVendors = users.filter((u) => u.role === "vendor").length;
-  const activeUsers = users.filter((u) => u.status === "active").length;
-
   return (
-    <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-screen">
-      {/* Header Section */}
-      <div className="mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg">
-            <HiUsers className="w-6 h-6 text-white" />
+    <div className="us-root">
+      <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet"
+      />
+      <style>{`
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+        .us-root{min-height:100vh;background:#0a0a0a;font-family:'Poppins',sans-serif;color:#fff;padding:24px 28px}
+        @keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+        .fade-up{animation:fadeUp 0.5s ease-out forwards;opacity:0}
+        .naira{font-family:Arial,system-ui,sans-serif}
+        button,select,a,[role="button"]{cursor:pointer}
+
+        /* HERO — primary green */
+        .hero-card{position:relative;overflow:hidden;width:100%;border-radius:20px;background:#0f3318;margin-bottom:22px;height:280px;animation:fadeUp 0.45s ease-out forwards;display:flex;border:1px solid rgba(34,197,94,0.12)}
+        .hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(34,197,94,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(34,197,94,0.04) 1px,transparent 1px);background-size:32px 32px;pointer-events:none}
+        .hero-left{flex:1;padding:40px;display:flex;flex-direction:column;justify-content:center;position:relative;z-index:2}
+        .hero-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(34,197,94,0.05);color:#22c55e;border:1px solid rgba(34,197,94,0.4);font-size:9px;font-weight:700;padding:4px 10px;border-radius:8px;margin-bottom:14px;letter-spacing:.6px;text-transform:uppercase;box-shadow:0 0 8px rgba(34,197,94,0.2)}
+        .hero-title{font-size:24px;font-weight:700;color:#fff;margin-bottom:12px;line-height:1.25;letter-spacing:-.5px;max-width:400px}
+        .hero-sub{font-size:13px;color:rgba(255,255,255,.42);margin-bottom:28px;line-height:1.75;max-width:380px}
+        .hero-acts{display:flex;gap:12px}
+        .hero-primary{display:flex;align-items:center;gap:7px;padding:11px 22px;background:#eab308;color:#000;border:none;border-radius:12px;font-size:13px;font-weight:800;cursor:pointer;font-family:'Poppins',sans-serif;transition:all .2s;box-shadow:0 0 20px rgba(234,179,8,.3)}
+        .hero-primary:hover{background:#facc15;transform:translateY(-1px)}
+        .hero-ghost{padding:11px 22px;background:rgba(255,255,255,.05);color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.12);border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;font-family:'Poppins',sans-serif;transition:all .2s}
+        .hero-ghost:hover{background:rgba(255,255,255,.1);color:#fff}
+        .hero-right{width:42%;flex-shrink:0;position:relative;display:flex;align-items:center;justify-content:center;cursor:pointer}
+        .hero-right::before{content:'';position:absolute;inset:-10px;background:radial-gradient(ellipse 70% 60% at 55% 50%,rgba(34,197,94,.22) 0%,rgba(34,197,94,.08) 45%,transparent 75%);pointer-events:none}
+        .hero-right::after{content:'';position:absolute;bottom:10px;left:10%;right:10%;height:40px;background:radial-gradient(ellipse 80% 100% at 50% 100%,rgba(34,197,94,.3) 0%,transparent 70%);pointer-events:none;filter:blur(8px)}
+        .hero-img{width:90%;height:90%;object-fit:contain;position:relative;z-index:1;filter:drop-shadow(0 8px 32px rgba(34,197,94,.25));transition:all .4s cubic-bezier(.34,1.56,.64,1)}
+        .hero-right:hover .hero-img{transform:translateY(-12px) scale(1.05);filter:drop-shadow(0 20px 50px rgba(34,197,94,.45))}
+
+        /* STATS */
+        .stats-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px}
+        .stat-tile{background:linear-gradient(160deg,#161d16 0%,#0f140f 70%,#0d120d 100%);border:1px solid rgba(34,197,94,.18);border-radius:16px;padding:18px 20px 16px;display:flex;flex-direction:column;cursor:pointer;position:relative;overflow:hidden;box-shadow:0 6px 28px rgba(0,0,0,.5);transition:box-shadow .3s,border-color .3s,transform .3s cubic-bezier(.34,1.4,.64,1)}
+        .stat-tile::after{content:'';position:absolute;bottom:-20px;right:-20px;width:100px;height:100px;background:radial-gradient(circle,rgba(34,197,94,.08) 0%,transparent 70%);pointer-events:none}
+        .stat-tile:hover{transform:translateY(-4px) scale(1.015);border-color:rgba(34,197,94,.35);box-shadow:0 0 40px rgba(34,197,94,.1),0 14px 40px rgba(0,0,0,.6)}
+        .stat-top-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+        .stat-trend{font-size:9.5px;font-weight:700;color:rgba(34,197,94,.6);background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.16);border-radius:20px;padding:3px 8px;white-space:nowrap}
+        .stat-val{font-size:28px;font-weight:700;color:#fff;letter-spacing:-1.5px;font-variant-numeric:tabular-nums}
+        .stat-label{font-size:12px;font-weight:700;color:rgba(255,255,255,.72);margin-bottom:2px}
+        .stat-sub{font-size:10.5px;font-weight:500;color:rgba(255,255,255,.22);margin-bottom:14px}
+        .stat-bar-track{height:3px;background:rgba(255,255,255,.05);border-radius:99px;overflow:hidden}
+        @keyframes barGrow{from{width:0%}to{width:var(--bar-w)}}
+        .stat-bar-fill{height:100%;width:var(--bar-w);background:#eab308;border-radius:99px;animation:barGrow 1.4s cubic-bezier(.4,0,.2,1) forwards;box-shadow:0 0 8px rgba(234,179,8,.55)}
+
+        /* FILTERS */
+        .filters-wrap{background:#111;border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:16px 18px;margin-bottom:14px}
+        .filters-top{display:grid;grid-template-columns:1fr auto;gap:10px;margin-bottom:12px}
+        .fi-wrap{position:relative}
+        .fi-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);pointer-events:none}
+        .fi{width:100%;padding:9px 12px 9px 36px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;font-size:12px;font-weight:500;color:#fff;font-family:'Poppins',sans-serif;outline:none}
+        .fi::placeholder{color:rgba(255,255,255,.25)}
+        .fi:focus{border-color:rgba(34,197,94,.4)}
+        .sel-wrap{position:relative}
+        .sel{padding:9px 28px 9px 12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:10px;font-size:12px;font-weight:600;color:rgba(255,255,255,.65);font-family:'Poppins',sans-serif;outline:none;cursor:pointer;appearance:none;color-scheme:dark;min-width:155px}
+        .sel:focus{border-color:rgba(34,197,94,.4)}
+        .sel option{background:#1a1a1a}
+        .sel-caret{position:absolute;right:9px;top:50%;transform:translateY(-50%);pointer-events:none}
+        .stabs{display:flex;gap:6px;margin-bottom:10px}
+        .stab{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.03);font-size:11px;font-weight:700;color:rgba(255,255,255,.4);font-family:'Poppins',sans-serif;cursor:pointer;transition:all .2s}
+        .stab:hover{color:rgba(255,255,255,.7)}
+        .stab-on{background:rgba(34,197,94,.08);border-color:rgba(34,197,94,.25);color:#22c55e}
+        .stab-cnt{padding:1px 6px;border-radius:20px;background:rgba(255,255,255,.07);font-size:9px}
+        .stab-on .stab-cnt{background:rgba(34,197,94,.15)}
+        .fres{font-size:11px;color:rgba(255,255,255,.3);padding-top:10px;border-top:1px solid rgba(255,255,255,.05)}
+        .fres span{color:#22c55e;font-weight:700}
+
+        /* ROLE BADGE & STATUS DOT */
+        .role-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700}
+        .sdot-wrap{display:flex;align-items:center;gap:5px;font-size:10px;font-weight:600}
+        .sdot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+
+        /* USER CARD */
+        .users-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:16px}
+        .user-card{background:#111;border:1px solid rgba(255,255,255,.06);border-radius:18px;overflow:hidden;transition:transform .3s cubic-bezier(.34,1.4,.64,1),border-color .25s,box-shadow .3s}
+        .user-card:hover{transform:translateY(-5px);border-color:rgba(34,197,94,.28);box-shadow:0 16px 48px rgba(0,0,0,.5)}
+        /* GREEN header strip — no overlap since avatar is BELOW the strip */
+        .card-header{height:76px;background:linear-gradient(135deg,#0f3318 0%,#0a2210 100%);border-bottom:1px solid rgba(34,197,94,.15);position:relative;padding:12px 14px 0}
+        .card-header::after{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(34,197,94,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(34,197,94,.05) 1px,transparent 1px);background-size:20px 20px;pointer-events:none}
+        .card-header-badges{display:flex;align-items:center;justify-content:space-between;position:relative;z-index:2}
+        /* identity row — sits BELOW strip, no negative margin */
+        .card-identity{display:flex;align-items:center;gap:10px;padding:14px 14px 0;margin-bottom:12px}
+        .card-avatar{width:46px;height:46px;border-radius:12px;flex-shrink:0;display:flex;align-items:center;justify-content:center;background:rgba(34,197,94,.12);border:2px solid rgba(34,197,94,.25)}
+        .card-initials{font-size:14px;font-weight:900;color:#22c55e}
+        .card-name{font-size:13px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:1px}
+        .card-email{font-size:11px;color:rgba(255,255,255,.3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px}
+        .card-active{font-size:10px;color:rgba(255,255,255,.2)}
+        .card-body{padding:0 14px 14px}
+        .card-stats{display:flex;align-items:center;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:10px;margin-bottom:10px}
+        .cs{flex:1;text-align:center}
+        .cs-label{font-size:9px;font-weight:700;color:rgba(255,255,255,.25);text-transform:uppercase;letter-spacing:.4px;margin-bottom:2px}
+        .cs-val{font-size:13px;font-weight:800;color:#fff}
+        .cs-div{width:1px;height:28px;background:rgba(255,255,255,.07)}
+        .vendor-pill{display:flex;align-items:center;gap:6px;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.14);border-radius:10px;padding:8px 10px;margin-bottom:10px;font-size:11px;font-weight:600;color:rgba(34,197,94,.8)}
+        .vp-right{display:flex;align-items:center;gap:3px;margin-left:auto;font-size:10px;color:rgba(255,255,255,.3)}
+        .card-joined{font-size:10px;color:rgba(255,255,255,.2);display:flex;align-items:center;gap:5px;margin-bottom:12px}
+        .card-actions{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+        .cbtn{display:flex;align-items:center;justify-content:center;gap:4px;padding:8px;border-radius:8px;border:none;cursor:pointer;font-size:11px;font-weight:700;font-family:'Poppins',sans-serif;transition:all .2s}
+        .cbtn-view{background:rgba(34,197,94,.1);color:#22c55e;border:1px solid rgba(34,197,94,.22)}
+        .cbtn-view:hover{background:#22c55e;color:#000}
+        .cbtn-del{background:rgba(239,68,68,.07);color:rgba(239,68,68,.7);border:1px solid rgba(239,68,68,.18)}
+        .cbtn-del:hover{background:#ef4444;color:#fff}
+
+        /* LOADING / EMPTY */
+        .loading-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:300px;gap:14px}
+        @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+        .spinner{width:36px;height:36px;border:3px solid rgba(34,197,94,.15);border-top-color:#22c55e;border-radius:50%;animation:spin .8s linear infinite}
+        .ltxt{font-size:12px;font-weight:600;color:rgba(255,255,255,.3)}
+        .empty{background:#111;border:1px solid rgba(255,255,255,.06);border-radius:18px;padding:64px 24px;text-align:center}
+        .empty-icon{width:64px;height:64px;border-radius:18px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+        .empty-title{font-size:16px;font-weight:800;color:rgba(255,255,255,.5);margin-bottom:6px}
+        .empty-sub{font-size:12px;color:rgba(255,255,255,.22)}
+
+        /* MODAL */
+        .overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;z-index:999;padding:8px;animation:fadeIn .2s ease-out}
+        @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+        .mbox{background:#0f0f0f;border:1px solid rgba(255,255,255,.07);border-radius:18px;width:100%;max-width:500px;max-height:92vh;overflow-y:auto;animation:scaleIn .28s cubic-bezier(.34,1.4,.64,1);box-shadow:0 40px 100px rgba(0,0,0,.75);scrollbar-width:thin;scrollbar-color:#222 #0f0f0f}
+        .mbox-sm{max-width:400px}
+        @keyframes scaleIn{from{opacity:0;transform:scale(.94) translateY(14px)}to{opacity:1;transform:scale(1) translateY(0)}}
+
+        /* FIXED modal hero — tall (150px), avatar anchored inside at bottom */
+        .mhero{position:relative;height:150px;border-radius:18px 18px 0 0;background:linear-gradient(135deg,#0f3318 0%,#082010 100%);border-bottom:1px solid rgba(34,197,94,.18);overflow:hidden}
+        .mhero-pat{position:absolute;inset:0;background-image:linear-gradient(rgba(34,197,94,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(34,197,94,.05) 1px,transparent 1px);background-size:24px 24px}
+        .mhero-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 0%,rgba(15,15,15,.55) 100%)}
+        .mclose{position:absolute;top:14px;right:14px;width:30px;height:30px;border-radius:8px;background:rgba(0,0,0,.4);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,.7);transition:all .2s;z-index:5}
+        .mclose:hover{background:rgba(0,0,0,.7);color:#fff}
+        /* avatar sits fully inside the hero at the bottom-left corner */
+        .mav-wrap{position:absolute;bottom:16px;left:22px;z-index:3}
+        .mav{width:56px;height:56px;border-radius:14px;display:flex;align-items:center;justify-content:center;background:rgba(34,197,94,.15);border:2px solid rgba(34,197,94,.3);box-shadow:0 4px 16px rgba(0,0,0,.5)}
+        .mav-init{font-size:17px;font-weight:900;color:#22c55e}
+        /* name block — no offset needed since avatar is inside hero */
+        .mname-block{padding:18px 22px 4px}
+        .mfullname{font-size:18px;font-weight:800;color:#fff;margin-bottom:4px}
+        .mbody{padding:14px 22px 20px}
+        .m2col{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+        .mcell{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:10px 12px;margin-bottom:0}
+        .mclabel{display:flex;align-items:center;gap:5px;font-size:9px;font-weight:700;color:rgba(255,255,255,.28);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+        .mcval{font-size:12px;font-weight:700;color:#fff}
+        .mstats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+        .msc{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:12px;text-align:center}
+        .msc-label{font-size:9px;font-weight:700;color:rgba(255,255,255,.25);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+        .msc-val{font-size:16px;font-weight:900}
+        .mactions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+        .mbtn{display:flex;align-items:center;justify-content:center;gap:7px;padding:11px;border-radius:9px;border:none;cursor:pointer;font-size:13px;font-weight:800;font-family:'Poppins',sans-serif;transition:all .2s}
+        .mbtn:disabled{opacity:.55;cursor:not-allowed}
+        .mbtn-ghost{background:rgba(255,255,255,.05);color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.1)}
+        .mbtn-ghost:hover:not(:disabled){background:rgba(255,255,255,.09);color:#fff}
+        .mbtn-del{background:#ef4444;color:#fff;border:1px solid #ef4444}
+        .mbtn-del:hover:not(:disabled){background:#dc2626}
+        .conf-icon{width:52px;height:52px;border-radius:14px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.22);display:flex;align-items:center;justify-content:center;margin:0 auto 12px}
+        .conf-title{font-size:17px;font-weight:800;color:#fff;margin-bottom:8px}
+        .conf-sub{font-size:12.5px;color:rgba(255,255,255,.4);line-height:1.65;margin-bottom:14px}
+        .conf-sub strong{color:rgba(255,255,255,.75)}
+        .del-card{display:flex;align-items:center;gap:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:12px 14px;margin-bottom:16px;text-align:left}
+        .del-av{width:40px;height:40px;border-radius:10px;background:rgba(34,197,94,.12);border:1.5px solid rgba(34,197,94,.25);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+        .conf-btns{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+
+        *{scrollbar-width:thin;scrollbar-color:#222 #0a0a0a}
+        *::-webkit-scrollbar{width:5px}
+        *::-webkit-scrollbar-track{background:#0a0a0a}
+        *::-webkit-scrollbar-thumb{background:#222;border-radius:999px}
+      `}</style>
+
+      {/* HERO */}
+      <div className="hero-card">
+        <div className="hero-grid" />
+        <div className="hero-left">
+          <div className="hero-badge">
+            <Users size={11} weight="fill" /> Users Management
           </div>
-          <div>
-            <h1 className="text-3xl font-black text-gray-900">
-              Users Management
-            </h1>
-            <p className="text-gray-600 font-medium">
-              Manage all registered users and their activities
-            </p>
+          <h1 className="hero-title">Manage Everyone on Your Platform</h1>
+          <p className="hero-sub">
+            Oversee customers, vendors, and admins. View activity, spending, and
+            account details — all in one place.
+          </p>
+          <div className="hero-acts">
+            <button className="hero-primary">
+              <ShieldCheck size={15} weight="bold" /> View All Users
+            </button>
+            <button className="hero-ghost">Export Data</button>
           </div>
+        </div>
+        <div className="hero-right">
+          <img
+            src="/assets/categories/VendorPageImg.png"
+            alt="Users"
+            className="hero-img"
+            onError={(e) => (e.target.style.display = "none")}
+          />
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-all">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-green-50 flex items-center justify-center">
-              <HiUsers className="w-6 h-6 text-green-600" />
-            </div>
-            <div>
-              <p className="text-sm font-bold text-gray-500">Total Users</p>
-              <p className="text-2xl font-black text-gray-900">
-                {users.length}
-              </p>
-            </div>
-          </div>
-        </div>
+      <StatCards
+        total={users.length}
+        customers={customers}
+        vendors={vendors}
+        active={active}
+      />
 
-        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-all">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center">
-              <HiShoppingCart className="w-6 h-6 text-blue-600" />
-            </div>
-            <div>
-              <p className="text-sm font-bold text-gray-500">Customers</p>
-              <p className="text-2xl font-black text-gray-900">
-                {totalCustomers}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-all">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-purple-50 flex items-center justify-center">
-              <HiShieldCheck className="w-6 h-6 text-purple-600" />
-            </div>
-            <div>
-              <p className="text-sm font-bold text-gray-500">Vendors</p>
-              <p className="text-2xl font-black text-gray-900">
-                {totalVendors}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-all">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-orange-50 flex items-center justify-center">
-              <HiCheckCircle className="w-6 h-6 text-orange-600" />
-            </div>
-            <div>
-              <p className="text-sm font-bold text-gray-500">Active Users</p>
-              <p className="text-2xl font-black text-gray-900">{activeUsers}</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Filters & Search */}
-      <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-          {/* Search */}
-          <div className="relative md:col-span-2">
-            <HiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+      {/* FILTERS */}
+      <div className="filters-wrap">
+        <div className="filters-top">
+          <div className="fi-wrap">
+            <MagnifyingGlass
+              size={14}
+              color="rgba(255,255,255,0.25)"
+              className="fi-icon"
+            />
             <input
+              className="fi"
               type="text"
-              placeholder="Search by name, email, or phone..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none font-medium"
+              placeholder="Search by name, email, phone…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
             />
           </div>
-
-          {/* Role Filter */}
-          <div className="relative">
-            <HiFilter className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <div className="sel-wrap">
             <select
+              className="sel"
               value={roleFilter}
-              onChange={(e) => setRoleFilter(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none font-bold text-gray-700 bg-white appearance-none cursor-pointer"
+              onChange={(e) => setRole(e.target.value)}
             >
-              <option value="all">All Roles ({roleCounts.all})</option>
-              <option value="customer">
-                Customers ({roleCounts.customer})
-              </option>
-              <option value="vendor">Vendors ({roleCounts.vendor})</option>
-              <option value="admin">Admins ({roleCounts.admin})</option>
+              <option value="all">All Roles ({roleCnt.all})</option>
+              <option value="customer">Customers ({roleCnt.customer})</option>
+              <option value="vendor">Vendors ({roleCnt.vendor})</option>
+              <option value="admin">Admins ({roleCnt.admin})</option>
             </select>
-            <HiChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+            <CaretDown
+              size={12}
+              color="rgba(255,255,255,0.3)"
+              className="sel-caret"
+            />
           </div>
         </div>
-
-        {/* Status Filter Tabs */}
-        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+        <div className="stabs">
           {[
-            { key: "all", label: "All Users", icon: HiUsers },
-            { key: "active", label: "Active", icon: HiCheckCircle },
-            { key: "inactive", label: "Inactive", icon: HiXCircle },
-          ].map((status) => {
-            const Icon = status.icon;
-            return (
-              <button
-                key={status.key}
-                onClick={() => setStatusFilter(status.key)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm transition-all duration-300 whitespace-nowrap ${
-                  statusFilter === status.key
-                    ? "bg-green-600 text-white shadow-md"
-                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                {status.label}
-                <span
-                  className={`px-2 py-0.5 rounded-full text-xs font-black ${
-                    statusFilter === status.key ? "bg-white/20" : "bg-gray-200"
-                  }`}
-                >
-                  {statusCounts[status.key]}
-                </span>
-              </button>
-            );
-          })}
+            { k: "all", l: "All Users" },
+            { k: "active", l: "Active" },
+            { k: "inactive", l: "Inactive" },
+          ].map(({ k, l }) => (
+            <button
+              key={k}
+              className={`stab ${statusFilter === k ? "stab-on" : ""}`}
+              onClick={() => setStatus(k)}
+            >
+              {l}
+              <span className="stab-cnt">
+                {k === "all"
+                  ? users.length
+                  : users.filter((u) => u.status === k).length}
+              </span>
+            </button>
+          ))}
         </div>
-
-        {/* Results Count */}
-        <div className="mt-4 pt-4 border-t border-gray-100">
-          <p className="text-sm font-bold text-gray-600">
-            Showing{" "}
-            <span className="text-green-600">{filteredUsers.length}</span> of{" "}
-            {users.length} users
-          </p>
+        <div className="fres">
+          Showing <span>{filtered.length}</span> of {users.length} users
         </div>
       </div>
 
-      {/* Users Grid */}
+      {/* GRID */}
       {loading ? (
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="inline-block w-12 h-12 border-4 border-green-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-            <p className="text-gray-600 font-medium">Loading users...</p>
-          </div>
+        <div className="loading-wrap">
+          <div className="spinner" />
+          <div className="ltxt">Loading users…</div>
         </div>
-      ) : filteredUsers.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-gray-200 p-12 text-center">
-          <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <HiUsers className="w-10 h-10 text-gray-400" />
+      ) : filtered.length === 0 ? (
+        <div className="empty">
+          <div className="empty-icon">
+            <Users size={28} color="rgba(255,255,255,0.2)" weight="duotone" />
           </div>
-          <p className="text-gray-900 text-xl font-black mb-2">
-            No users found
-          </p>
-          <p className="text-gray-500 font-medium">
+          <div className="empty-title">No users found</div>
+          <div className="empty-sub">
             Try adjusting your filters or search terms
-          </p>
+          </div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredUsers.map((user, index) => (
-            <div
-              key={user.id}
-              className="bg-white rounded-2xl border border-gray-200 overflow-hidden hover:shadow-xl transition-all duration-500 group animate-fadeInUp"
-              style={{ animationDelay: `${index * 30}ms` }}
-            >
-              {/* User Header */}
-              <div className="relative h-32 bg-gradient-to-br from-green-500 to-green-600">
-                <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent"></div>
-                <div className="absolute top-3 right-3 flex gap-2">
-                  <span
-                    className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold border ${getRoleBadgeColor(user.role)}`}
-                  >
-                    {user.role === "admin" && (
-                      <HiShieldCheck className="w-3 h-3" />
-                    )}
-                    {user.role === "vendor" && (
-                      <HiBadgeCheck className="w-3 h-3" />
-                    )}
-                    {user.role === "customer" && (
-                      <HiUserCircle className="w-3 h-3" />
-                    )}
-                    {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
-                  </span>
-                </div>
-              </div>
-
-              {/* Avatar */}
-              <div className="relative px-5 -mt-12 mb-3">
-                <div
-                  className={`w-20 h-20 rounded-xl bg-gradient-to-br ${getAvatarColor(user.role)} flex items-center justify-center text-white font-black text-2xl shadow-lg border-4 border-white`}
-                >
-                  {getInitials(user.fullName)}
-                </div>
-              </div>
-
-              {/* User Info */}
-              <div className="px-5 pb-5">
-                <div className="mb-4">
-                  <h3 className="font-black text-gray-900 text-lg mb-1 truncate group-hover:text-green-600 transition-colors">
-                    {user.fullName}
-                  </h3>
-                  <p className="text-sm text-gray-600 truncate mb-1">
-                    {user.email}
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <span
-                      className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-bold border ${getStatusBadge(user.status)}`}
-                    >
-                      <div
-                        className={`w-1.5 h-1.5 rounded-full ${user.status === "active" ? "bg-green-500" : "bg-gray-400"}`}
-                      ></div>
-                      {user.status.charAt(0).toUpperCase() +
-                        user.status.slice(1)}
-                    </span>
-                    <span className="text-xs text-gray-500">
-                      {user.lastActive}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Stats Grid */}
-                {user.role === "customer" && (
-                  <div className="grid grid-cols-2 gap-3 mb-4 pb-4 border-b border-gray-100">
-                    <div className="bg-green-50 rounded-lg p-3 border border-green-200">
-                      <p className="text-xs text-green-700 font-bold mb-0.5">
-                        Orders
-                      </p>
-                      <p className="text-lg font-black text-green-700">
-                        {user.totalOrders}
-                      </p>
-                    </div>
-                    <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
-                      <p className="text-xs text-blue-700 font-bold mb-0.5">
-                        Spent
-                      </p>
-                      <p className="text-sm font-black text-blue-700">
-                        ₦{(user.totalSpent / 1000).toFixed(0)}k
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {user.role === "vendor" && (
-                  <div className="mb-4 pb-4 border-b border-gray-100">
-                    <div className="bg-purple-50 rounded-lg p-3 border border-purple-200">
-                      <p className="text-xs text-purple-700 font-bold mb-1">
-                        Business
-                      </p>
-                      <p className="text-sm font-black text-purple-700 truncate">
-                        {user.businessName}
-                      </p>
-                      <p className="text-xs text-purple-600 mt-1">
-                        {user.totalProducts} products
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {/* Additional Info */}
-                <div className="space-y-2 mb-4">
-                  <div className="flex items-center gap-2 text-xs">
-                    <HiCalendar className="w-3.5 h-3.5 text-gray-400" />
-                    <span className="text-gray-600">
-                      Joined {user.joinedDate}
-                    </span>
-                  </div>
-                  {user.role === "customer" && user.favoriteCategory && (
-                    <div className="flex items-center gap-2 text-xs">
-                      <HiStar className="w-3.5 h-3.5 text-gray-400" />
-                      <span className="text-gray-600">
-                        Loves {user.favoriteCategory}
-                      </span>
-                    </div>
-                  )}
-                </div>
-
-                {/* Action Buttons */}
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    onClick={() => setSelectedUser(user)}
-                    className="flex items-center justify-center gap-1.5 px-3 py-2.5 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition-all duration-300 shadow-md text-sm"
-                  >
-                    <HiEye className="w-4 h-4" />
-                    View
-                  </button>
-                  <button
-                    onClick={() => setDeleteConfirmUser(user)}
-                    className="flex items-center justify-center gap-1.5 px-3 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-all duration-300 shadow-md text-sm"
-                  >
-                    <HiTrash className="w-4 h-4" />
-                    Delete
-                  </button>
-                </div>
-              </div>
-            </div>
+        <div className="users-grid">
+          {filtered.map((u, i) => (
+            <UserCard
+              key={u.id}
+              user={u}
+              onView={setSelected}
+              onDeleteConfirm={setDelTgt}
+              index={i}
+            />
           ))}
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
-      {deleteConfirmUser && (
-        <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn"
-          onClick={() => setDeleteConfirmUser(null)}
-        >
-          <div
-            className="bg-white rounded-2xl max-w-md w-full shadow-2xl animate-scaleIn"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="p-6">
-              {/* Warning Icon */}
-              <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
-                <HiExclamationCircle className="w-10 h-10 text-red-600" />
-              </div>
-
-              {/* Title */}
-              <h2 className="text-2xl font-black text-gray-900 text-center mb-2">
-                Delete User?
-              </h2>
-
-              {/* Message */}
-              <p className="text-gray-600 text-center mb-6">
-                Are you sure you want to delete{" "}
-                <span className="font-black text-gray-900">
-                  {deleteConfirmUser.fullName}
-                </span>
-                ? This action cannot be undone and all user data will be
-                permanently removed.
-              </p>
-
-              {/* User Info Card */}
-              <div className="bg-gray-50 rounded-xl p-4 mb-6 border border-gray-200">
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`w-12 h-12 rounded-lg bg-gradient-to-br ${getAvatarColor(deleteConfirmUser.role)} flex items-center justify-center text-white font-black text-sm`}
-                  >
-                    {getInitials(deleteConfirmUser.fullName)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-black text-gray-900 truncate">
-                      {deleteConfirmUser.fullName}
-                    </p>
-                    <p className="text-sm text-gray-600 truncate">
-                      {deleteConfirmUser.email}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  onClick={() => setDeleteConfirmUser(null)}
-                  className="px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-900 font-bold rounded-xl transition-all duration-300"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => deleteUser(deleteConfirmUser.id)}
-                  className="px-4 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-all duration-300 shadow-md"
-                >
-                  Yes, Delete
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* User Details Modal */}
-      {selectedUser && (
-        <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn"
-          onClick={() => setSelectedUser(null)}
-        >
-          <div
-            className="bg-white rounded-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto shadow-2xl animate-scaleIn"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Modal Header */}
-            <div className="relative h-40 bg-gradient-to-br from-green-500 to-green-600">
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
-              <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between">
-                <div className="flex items-center gap-4">
-                  <div
-                    className={`w-20 h-20 rounded-xl bg-gradient-to-br ${getAvatarColor(selectedUser.role)} flex items-center justify-center text-white font-black text-2xl shadow-lg border-4 border-white`}
-                  >
-                    {getInitials(selectedUser.fullName)}
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-black text-white drop-shadow-lg mb-1">
-                      {selectedUser.fullName}
-                    </h2>
-                    <p className="text-sm text-white/90 font-medium drop-shadow">
-                      {selectedUser.email}
-                    </p>
-                  </div>
-                </div>
-                <button
-                  onClick={() => setSelectedUser(null)}
-                  className="w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm hover:bg-white/30 border border-white/30 flex items-center justify-center transition-all duration-300"
-                >
-                  <HiX className="w-5 h-5 text-white" />
-                </button>
-              </div>
-            </div>
-
-            {/* Modal Content */}
-            <div className="p-6">
-              {/* Status & Role Badges */}
-              <div className="flex gap-3 mb-6">
-                <span
-                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold border ${getRoleBadgeColor(selectedUser.role)}`}
-                >
-                  {selectedUser.role === "admin" && (
-                    <HiShieldCheck className="w-4 h-4" />
-                  )}
-                  {selectedUser.role === "vendor" && (
-                    <HiBadgeCheck className="w-4 h-4" />
-                  )}
-                  {selectedUser.role === "customer" && (
-                    <HiUserCircle className="w-4 h-4" />
-                  )}
-                  {selectedUser.role.charAt(0).toUpperCase() +
-                    selectedUser.role.slice(1)}
-                </span>
-                <span
-                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold border ${getStatusBadge(selectedUser.status)}`}
-                >
-                  <div
-                    className={`w-2 h-2 rounded-full ${selectedUser.status === "active" ? "bg-green-500" : "bg-gray-400"}`}
-                  ></div>
-                  {selectedUser.status.charAt(0).toUpperCase() +
-                    selectedUser.status.slice(1)}
-                </span>
-              </div>
-
-              {/* Contact Info */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
-                  <div className="flex items-center gap-2 mb-2">
-                    <HiMail className="w-5 h-5 text-blue-600" />
-                    <p className="text-xs font-bold text-blue-700">EMAIL</p>
-                  </div>
-                  <p className="text-sm font-bold text-gray-900 break-all">
-                    {selectedUser.email}
-                  </p>
-                </div>
-
-                <div className="bg-green-50 rounded-xl p-4 border border-green-200">
-                  <div className="flex items-center gap-2 mb-2">
-                    <HiPhone className="w-5 h-5 text-green-600" />
-                    <p className="text-xs font-bold text-green-700">PHONE</p>
-                  </div>
-                  <p className="text-sm font-bold text-gray-900">
-                    {selectedUser.phone}
-                  </p>
-                </div>
-              </div>
-
-              {/* Address */}
-              <div className="bg-purple-50 rounded-xl p-4 mb-6 border border-purple-200">
-                <div className="flex items-center gap-2 mb-2">
-                  <HiLocationMarker className="w-5 h-5 text-purple-600" />
-                  <p className="text-xs font-bold text-purple-700">ADDRESS</p>
-                </div>
-                <p className="text-sm font-bold text-gray-900">
-                  {selectedUser.address}
-                </p>
-              </div>
-
-              {/* Customer Stats */}
-              {selectedUser.role === "customer" && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                  <div className="bg-green-50 rounded-xl p-4 border border-green-200">
-                    <div className="flex items-center gap-2 mb-2">
-                      <HiShoppingCart className="w-5 h-5 text-green-600" />
-                      <p className="text-xs font-bold text-green-700">
-                        TOTAL ORDERS
-                      </p>
-                    </div>
-                    <p className="text-2xl font-black text-green-700">
-                      {selectedUser.totalOrders}
-                    </p>
-                  </div>
-
-                  <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
-                    <div className="flex items-center gap-2 mb-2">
-                      <HiCurrencyDollar className="w-5 h-5 text-blue-600" />
-                      <p className="text-xs font-bold text-blue-700">
-                        TOTAL SPENT
-                      </p>
-                    </div>
-                    <p className="text-2xl font-black text-blue-700">
-                      ₦{selectedUser.totalSpent.toLocaleString()}
-                    </p>
-                  </div>
-
-                  <div className="bg-orange-50 rounded-xl p-4 border border-orange-200">
-                    <div className="flex items-center gap-2 mb-2">
-                      <HiStar className="w-5 h-5 text-orange-600" />
-                      <p className="text-xs font-bold text-orange-700">
-                        LOYALTY POINTS
-                      </p>
-                    </div>
-                    <p className="text-2xl font-black text-orange-700">
-                      {selectedUser.loyaltyPoints}
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {/* Vendor Stats */}
-              {selectedUser.role === "vendor" && (
-                <div className="bg-purple-50 rounded-xl p-5 mb-6 border border-purple-200">
-                  <p className="text-xs font-bold text-purple-700 mb-3">
-                    VENDOR INFORMATION
-                  </p>
-                  <div className="space-y-3">
-                    <div>
-                      <p className="text-xs text-gray-500 mb-1">
-                        Business Name
-                      </p>
-                      <p className="text-lg font-black text-gray-900">
-                        {selectedUser.businessName}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-gray-500 mb-1">
-                        Total Products
-                      </p>
-                      <p className="text-lg font-black text-gray-900">
-                        {selectedUser.totalProducts} products
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* Account Info */}
-              <div className="bg-gray-50 rounded-xl p-5 mb-6">
-                <p className="text-xs font-bold text-gray-700 mb-4">
-                  ACCOUNT INFORMATION
-                </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Joined Date</p>
-                    <p className="text-sm font-bold text-gray-900">
-                      {selectedUser.joinedDate}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Last Active</p>
-                    <p className="text-sm font-bold text-gray-900">
-                      {selectedUser.lastActive}
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="grid grid-cols-2 gap-4">
-                <button
-                  onClick={() => setSelectedUser(null)}
-                  className="px-6 py-4 bg-gray-900 hover:bg-gray-800 text-white font-black rounded-xl transition-all duration-300 shadow-md"
-                >
-                  Close
-                </button>
-                <button
-                  onClick={() => {
-                    setSelectedUser(null);
-                    setDeleteConfirmUser(selectedUser);
-                  }}
-                  className="px-6 py-4 bg-red-600 hover:bg-red-700 text-white font-black rounded-xl transition-all duration-300 shadow-md"
-                >
-                  Delete User
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <style>{`
-        @keyframes fadeIn {
-          from { opacity: 0; }
-          to { opacity: 1; }
-        }
-
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @keyframes scaleIn {
-          from {
-            opacity: 0;
-            transform: scale(0.95);
-          }
-          to {
-            opacity: 1;
-            transform: scale(1);
-          }
-        }
-
-        .animate-fadeIn {
-          animation: fadeIn 0.3s ease-out;
-        }
-
-        .animate-fadeInUp {
-          animation: fadeInUp 0.6s ease-out forwards;
-          opacity: 0;
-        }
-
-        .animate-scaleIn {
-          animation: scaleIn 0.3s ease-out;
-        }
-
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
-        }
-        .scrollbar-hide {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-      `}</style>
+      <UserModal
+        user={selectedUser}
+        onClose={() => setSelected(null)}
+        onDeleteConfirm={(u) => {
+          setSelected(null);
+          setDelTgt(u);
+        }}
+      />
+      <DeleteModal
+        user={deleteTarget}
+        onClose={() => setDelTgt(null)}
+        onConfirm={deleteUser}
+      />
     </div>
   );
 }

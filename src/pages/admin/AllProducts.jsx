@@ -1,23 +1,563 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
-  HiSearch,
-  HiFilter,
-  HiPlus,
-  HiEye,
-  HiPencil,
-  HiTrash,
-  HiShoppingBag,
-  HiCurrencyDollar,
-  HiStar,
-  HiStatusOnline,
-  HiStatusOffline,
-  HiX,
-  HiChevronDown,
-  HiArrowUp,
-  HiArrowDown,
-  HiExclamationCircle,
-} from "react-icons/hi";
+  MagnifyingGlass,
+  CaretDown,
+  Plus,
+  Storefront,
+  Package,
+  Eye,
+  PencilSimple,
+  Trash,
+  Star,
+  X,
+  Warning,
+  ChartLineUp,
+  CurrencyNgn,
+  CheckCircle,
+  ArrowUp,
+  ArrowDown,
+  Clock,
+} from "@phosphor-icons/react";
 
+/* ─────────────────────────────────────────
+   Toast
+───────────────────────────────────────── */
+function Toast({ toasts }) {
+  return (
+    <div className="toast-container">
+      {toasts.map((t) => (
+        <div
+          key={t.id}
+          className={`toast toast-${t.type} ${t.removing ? "toast-out" : "toast-in"}`}
+        >
+          <div className="toast-icon">
+            {t.type === "success" ? (
+              <CheckCircle size={16} weight="fill" color="#22c55e" />
+            ) : (
+              <Warning size={16} weight="fill" color="#ef4444" />
+            )}
+          </div>
+          <div className="toast-body">
+            <div className="toast-title">{t.title}</div>
+            <div className="toast-sub">{t.sub}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────
+   Animated counter
+───────────────────────────────────────── */
+function useCountUp(target, duration = 600) {
+  const [count, setCount] = useState(target);
+  const prev = useRef(target);
+  useEffect(() => {
+    if (prev.current === target) return;
+    const from = prev.current;
+    prev.current = target;
+    const diff = target - from;
+    const steps = Math.min(Math.abs(diff), 30);
+    const inc = diff / steps;
+    let current = from;
+    let step = 0;
+    const timer = setInterval(() => {
+      step++;
+      current += inc;
+      setCount(step >= steps ? target : Math.round(current));
+      if (step >= steps) clearInterval(timer);
+    }, Math.max(16, Math.floor(duration / steps)));
+    return () => clearInterval(timer);
+  }, [target, duration]);
+  return count;
+}
+
+/* ─────────────────────────────────────────
+   Hero — Products
+───────────────────────────────────────── */
+function HeroCard({ onAddProduct }) {
+  return (
+    <div className="hero-card">
+      <div className="hero-grid-bg" />
+      <div className="hero-left">
+        <div className="hero-badge">
+          <Package size={11} weight="fill" /> Product Management
+        </div>
+        <h1 className="hero-title">Manage Your Product Inventory</h1>
+        <p className="hero-sub">
+          Track all products, monitor stock levels, and manage your entire
+          inventory from one centralized dashboard. Keep your catalog up to
+          date and optimized for sales.
+        </p>
+        <div className="hero-actions">
+          <button className="hero-btn-primary" onClick={onAddProduct}>
+            <Plus size={15} weight="bold" /> Add New Product
+          </button>
+          <button className="hero-btn-ghost" onClick={onAddProduct}>
+            Import Products
+          </button>
+        </div>
+      </div>
+      <div className="hero-right">
+        <div className="hero-icon-box">
+          <Storefront size={48} weight="duotone" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────
+   Stat cards
+───────────────────────────────────────── */
+function StatCards({ total, active, outOfStock, lowStock, totalValue }) {
+  const totalCount = useCountUp(total);
+  const activeCount = useCountUp(active);
+  const outCount = useCountUp(outOfStock);
+  const lowCount = useCountUp(lowStock);
+  const valCount = useCountUp(Math.round(totalValue / 1000000));
+  const totalP = total || 1;
+
+  const cards = [
+    {
+      label: "Total Products",
+      value: totalCount,
+      suffix: "",
+      prefix: "",
+      sub: "In catalog",
+      bar: 100,
+      trend: `${total} products`,
+      delay: "60ms",
+    },
+    {
+      label: "Active Products",
+      value: activeCount,
+      suffix: "",
+      prefix: "",
+      sub: "Currently listed",
+      bar: Math.round((active / totalP) * 100),
+      trend: `${active} active`,
+      delay: "120ms",
+    },
+    {
+      label: "Out of Stock",
+      value: outCount,
+      suffix: "",
+      prefix: "",
+      sub: "Unavailable",
+      bar: Math.round((outOfStock / totalP) * 100),
+      trend: `${outOfStock} out`,
+      delay: "180ms",
+    },
+    {
+      label: "Low Stock",
+      value: lowCount,
+      suffix: "",
+      prefix: "",
+      sub: "Running low",
+      bar: Math.round((lowStock / totalP) * 100),
+      trend: `${lowStock} low`,
+      delay: "240ms",
+    },
+  ];
+
+  return (
+    <div className="stats-bar">
+      {cards.map((c, i) => (
+        <div
+          key={i}
+          className="stat-tile fade-up"
+          style={{ animationDelay: c.delay }}
+        >
+          <div className="stat-top-row">
+            <div className="stat-number-row">
+              <span className="stat-prefix">{c.prefix}</span>
+              <span className="stat-val">{c.value.toLocaleString()}</span>
+              <span className="stat-suffix">{c.suffix}</span>
+            </div>
+            <span className="stat-trend">{c.trend}</span>
+          </div>
+          <div className="stat-label">{c.label}</div>
+          <div className="stat-sub">{c.sub}</div>
+          <div className="stat-bar-track">
+            <div
+              className="stat-bar-fill"
+              style={{ "--bar-w": `${Math.max(c.bar, 2)}%` }}
+            />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────
+   Status Badge
+───────────────────────────────────────── */
+const STATUS_CFG = {
+  active: {
+    color: "#22c55e",
+    bg: "rgba(34,197,94,0.1)",
+    border: "rgba(34,197,94,0.25)",
+    label: "Active",
+  },
+  inactive: {
+    color: "#94a3b8",
+    bg: "rgba(148,163,184,0.1)",
+    border: "rgba(148,163,184,0.25)",
+    label: "Inactive",
+  },
+  out_of_stock: {
+    color: "#ef4444",
+    bg: "rgba(239,68,68,0.1)",
+    border: "rgba(239,68,68,0.25)",
+    label: "Out of Stock",
+  },
+  draft: {
+    color: "#f59e0b",
+    bg: "rgba(245,158,11,0.1)",
+    border: "rgba(245,158,11,0.25)",
+    label: "Draft",
+  },
+};
+
+function StatusBadge({ status }) {
+  const c = STATUS_CFG[status] || STATUS_CFG.draft;
+  return (
+    <span
+      className="sbadge"
+      style={{
+        color: c.color,
+        background: c.bg,
+        border: `1px solid ${c.border}`,
+      }}
+    >
+      {c.label}
+    </span>
+  );
+}
+
+/* ─────────────────────────────────────────
+   Stock Badge
+───────────────────────────────────────── */
+function StockBadge({ stock }) {
+  if (stock === 0) {
+    return (
+      <span className="stock-badge stock-out">
+        <Warning size={10} weight="fill" /> Out of Stock
+      </span>
+    );
+  }
+  if (stock < 20) {
+    return (
+      <span className="stock-badge stock-low">
+        <Clock size={10} weight="fill" /> Low Stock
+      </span>
+    );
+  }
+  return (
+    <span className="stock-badge stock-ok">
+      <Package size={10} weight="fill" /> In Stock
+    </span>
+  );
+}
+
+/* ─────────────────────────────────────────
+   Product Card
+───────────────────────────────────────── */
+function ProductCard({ product, onView, onEdit, onDelete, index }) {
+  return (
+    <div className="product-card fade-up" style={{ animationDelay: `${index * 55}ms` }}>
+      <div className="product-image-wrap">
+        <img
+          src={product.images[0]}
+          alt={product.name}
+          className="product-image"
+          onError={(e) => {
+            e.target.src = "/Bg.PNG";
+          }}
+        />
+        <div className="product-image-overlay">
+          <button className="product-overlay-btn" onClick={() => onView(product)}>
+            <Eye size={14} weight="bold" />
+          </button>
+          <button className="product-overlay-btn" onClick={() => onEdit(product)}>
+            <PencilSimple size={14} weight="bold" />
+          </button>
+        </div>
+        <StockBadge stock={product.stock} />
+      </div>
+      <div className="product-body">
+        <div className="product-category-row">
+          <span className="product-category">{product.category}</span>
+          <StatusBadge status={product.status} />
+        </div>
+        <div className="product-name">{product.name}</div>
+        <div className="product-vendor">
+          <Storefront size={11} weight="fill" />
+          {product.vendor}
+        </div>
+        <div className="product-price-row">
+          <div className="product-price">
+            <span className="naira">₦</span>
+            {product.price.toLocaleString()}
+          </div>
+          {product.originalPrice > product.price && (
+            <div className="product-original-price">
+              <span className="naira">₦</span>
+              {product.originalPrice.toLocaleString()}
+            </div>
+          )}
+        </div>
+        <div className="product-stats-row">
+          <div className="product-stat">
+            <span className="product-stat-label">Stock</span>
+            <span className="product-stat-value">{product.stock}</span>
+          </div>
+          <div className="product-stat">
+            <span className="product-stat-label">Sold</span>
+            <span className="product-stat-value">{product.sold}</span>
+          </div>
+          <div className="product-stat">
+            <span className="product-stat-label">Rating</span>
+            <span className="product-stat-value rating">
+              <Star size={10} weight="fill" color="#eab308" />
+              {product.rating}
+            </span>
+          </div>
+        </div>
+        <div className="product-actions">
+          <button className="product-action-btn product-view" onClick={() => onView(product)}>
+            <Eye size={13} weight="bold" /> View
+          </button>
+          <button className="product-action-btn product-edit" onClick={() => onEdit(product)}>
+            <PencilSimple size={13} weight="bold" /> Edit
+          </button>
+          <button className="product-action-btn product-delete" onClick={() => onDelete(product)}>
+            <Trash size={13} weight="bold" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────
+   Filter Bar
+───────────────────────────────────────── */
+function FilterBar({
+  searchQuery,
+  setSearchQuery,
+  categoryFilter,
+  setCategoryFilter,
+  statusFilter,
+  setStatusFilter,
+  sortBy,
+  setSortBy,
+  categories,
+  resultCount,
+  totalCount,
+}) {
+  return (
+    <div className="filter-bar">
+      <div className="filter-row">
+        <div className="filter-search">
+          <MagnifyingGlass size={16} weight="bold" className="filter-search-icon" />
+          <input
+            type="text"
+            placeholder="Search products..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="filter-search-input"
+          />
+        </div>
+        <div className="filter-group">
+          <select
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
+            className="filter-select"
+          >
+            <option value="all">All Categories</option>
+            {categories.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
+          </select>
+          <CaretDown size={14} weight="bold" className="filter-select-icon" />
+        </div>
+        <div className="filter-group">
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="filter-select"
+          >
+            <option value="all">All Status</option>
+            <option value="active">Active</option>
+            <option value="out_of_stock">Out of Stock</option>
+            <option value="inactive">Inactive</option>
+          </select>
+          <CaretDown size={14} weight="bold" className="filter-select-icon" />
+        </div>
+        <div className="filter-group">
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="filter-select"
+          >
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+            <option value="price_high">Price: High to Low</option>
+            <option value="price_low">Price: Low to High</option>
+            <option value="best_selling">Best Selling</option>
+            <option value="stock_low">Low Stock</option>
+          </select>
+          <CaretDown size={14} weight="bold" className="filter-select-icon" />
+        </div>
+      </div>
+      <div className="filter-results">
+        Showing <span className="filter-results-count">{resultCount}</span> of{" "}
+        <span className="filter-results-total">{totalCount}</span> products
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────
+   Delete Modal
+───────────────────────────────────────── */
+function DeleteModal({ product, onClose, onConfirm }) {
+  if (!product) return null;
+  return (
+    <div className="overlay" onClick={onClose}>
+      <div className="mbox mbox-danger" onClick={(e) => e.stopPropagation()}>
+        <div className="mheader">
+          <div className="mheader-icon mheader-icon-danger">
+            <Warning size={20} weight="fill" />
+          </div>
+          <div>
+            <div className="moid">Delete Product?</div>
+            <div className="mosub">This action cannot be undone</div>
+          </div>
+          <button className="mclose" onClick={onClose}>
+            <X size={14} weight="bold" />
+          </button>
+        </div>
+        <div className="mbody">
+          <p className="delete-message">
+            Are you sure you want to delete <strong>{product.name}</strong>? This
+            will permanently remove it from your inventory.
+          </p>
+          <div className="mdelete-actions">
+            <button className="mbtn mbtn-cancel" onClick={onClose}>
+              Cancel
+            </button>
+            <button className="mbtn mbtn-danger" onClick={() => onConfirm(product.id)}>
+              Yes, Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────
+   Product Detail Modal
+───────────────────────────────────────── */
+function ProductModal({ product, onClose, onEdit }) {
+  if (!product) return null;
+  return (
+    <div className="overlay" onClick={onClose}>
+      <div className="mbox" onClick={(e) => e.stopPropagation()}>
+        <div className="mheader">
+          <div>
+            <div className="moid">{product.name}</div>
+            <div className="mosub">
+              <Storefront size={12} weight="fill" /> {product.vendor}
+            </div>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <StatusBadge status={product.status} />
+            <button className="mclose" onClick={onClose}>
+              <X size={14} weight="bold" />
+            </button>
+          </div>
+        </div>
+        <div className="mbody">
+          <div className="mproduct-banner">
+            <img
+              src={product.images[0]}
+              alt={product.name}
+              className="mproduct-image"
+              onError={(e) => {
+                e.target.src = "/Bg.PNG";
+              }}
+            />
+          </div>
+          <div className="mproduct-details">
+            <div className="mproduct-row">
+              <span className="mproduct-label">Category</span>
+              <span className="mproduct-value">{product.category}</span>
+            </div>
+            <div className="mproduct-row">
+              <span className="mproduct-label">Description</span>
+              <span className="mproduct-value">{product.description}</span>
+            </div>
+          </div>
+          <div className="mproduct-stats-grid">
+            <div className="mproduct-stat-box">
+              <div className="mproduct-stat-label">Price</div>
+              <div className="mproduct-stat-value">
+                <span className="naira">₦</span>
+                {product.price.toLocaleString()}
+              </div>
+            </div>
+            <div className="mproduct-stat-box">
+              <div className="mproduct-stat-label">Original Price</div>
+              <div className="mproduct-stat-value orig">
+                <span className="naira">₦</span>
+                {product.originalPrice.toLocaleString()}
+              </div>
+            </div>
+            <div className="mproduct-stat-box">
+              <div className="mproduct-stat-label">Stock</div>
+              <div className="mproduct-stat-value">{product.stock}</div>
+            </div>
+            <div className="mproduct-stat-box">
+              <div className="mproduct-stat-label">Sold</div>
+              <div className="mproduct-stat-value">{product.sold}</div>
+            </div>
+            <div className="mproduct-stat-box">
+              <div className="mproduct-stat-label">Rating</div>
+              <div className="mproduct-stat-value">
+                <Star size={12} weight="fill" color="#eab308" />
+                {product.rating} ({product.reviews})
+              </div>
+            </div>
+            <div className="mproduct-stat-box">
+              <div className="mproduct-stat-label">Created</div>
+              <div className="mproduct-stat-value">{product.createdAt}</div>
+            </div>
+          </div>
+          <div className="mactions">
+            <button className="mbtn mbtn-secondary" onClick={onClose}>
+              Close
+            </button>
+            <button className="mbtn mbtn-primary" onClick={() => onEdit(product)}>
+              <PencilSimple size={14} weight="bold" /> Edit Product
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────
+   Main Component
+───────────────────────────────────────── */
 export default function AllProducts() {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -27,7 +567,20 @@ export default function AllProducts() {
   const [sortBy, setSortBy] = useState("newest");
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [deleteConfirmProduct, setDeleteConfirmProduct] = useState(null);
-  const [showFilters, setShowFilters] = useState(false);
+  const [toasts, setToasts] = useState([]);
+
+  const showToast = useCallback((type, title, sub) => {
+    const id = Date.now();
+    setToasts((prev) => [...prev, { id, type, title, sub, removing: false }]);
+    setTimeout(() => {
+      setToasts((prev) =>
+        prev.map((t) => (t.id === id ? { ...t, removing: true } : t))
+      );
+      setTimeout(() => {
+        setToasts((prev) => prev.filter((t) => t.id !== id));
+      }, 300);
+    }, 3000);
+  }, []);
 
   useEffect(() => {
     setLoading(true);
@@ -264,521 +817,1137 @@ export default function AllProducts() {
     setProducts(products.filter((p) => p.id !== productId));
     setDeleteConfirmProduct(null);
     setSelectedProduct(null);
-  };
-
-  const getStatusBadge = (status) => {
-    const statusMap = {
-      active: { bg: "bg-green-100", text: "text-green-700", label: "Active" },
-      inactive: { bg: "bg-gray-100", text: "text-gray-700", label: "Inactive" },
-      out_of_stock: {
-        bg: "bg-red-100",
-        text: "text-red-700",
-        label: "Out of Stock",
-      },
-      draft: { bg: "bg-yellow-100", text: "text-yellow-700", label: "Draft" },
-    };
-    return statusMap[status] || statusMap.draft;
-  };
-
-  const getCategoryColor = (category) => {
-    const colors = {
-      Sneakers: "bg-purple-100 text-purple-700",
-      Hoodies: "bg-blue-100 text-blue-700",
-      Jackets: "bg-orange-100 text-orange-700",
-      "T-Shirts": "bg-green-100 text-green-700",
-      Accessories: "bg-pink-100 text-pink-700",
-    };
-    return colors[category] || "bg-gray-100 text-gray-700";
+    showToast("success", "Product Deleted", "The product has been removed from your inventory");
   };
 
   const categories = [...new Set(products.map((p) => p.category))];
   const totalProducts = products.length;
   const activeProducts = products.filter((p) => p.status === "active").length;
   const outOfStock = products.filter((p) => p.stock === 0).length;
+  const lowStock = products.filter((p) => p.stock > 0 && p.stock < 20).length;
   const totalValue = products.reduce((sum, p) => sum + p.price * p.stock, 0);
 
+  const handleAddProduct = () => {
+    showToast("success", "Add Product", "Product creation modal would open here");
+  };
+
+  const handleEditProduct = (product) => {
+    setSelectedProduct(product);
+    showToast("success", "Edit Mode", `Editing ${product.name}`);
+  };
+
   return (
-    <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-screen">
-      {/* Header */}
-      <div className="mb-8">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg">
-              <HiShoppingBag className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-black text-gray-900">
-                All Products
-              </h1>
-              <p className="text-gray-600 font-medium">
-                Manage your product inventory
-              </p>
-            </div>
-          </div>
-          <button className="flex items-center gap-2 px-5 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-xl transition-all duration-300 shadow-md hover:shadow-lg">
-            <HiPlus className="w-5 h-5" />
-            Add Product
-          </button>
-        </div>
-      </div>
+    <div className="page-root">
+      <Toast toasts={toasts} />
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-blue-50 flex items-center justify-center">
-              <HiShoppingBag className="w-6 h-6 text-blue-600" />
-            </div>
-            <div>
-              <p className="text-sm font-bold text-gray-500">Total Products</p>
-              <p className="text-2xl font-black text-gray-900">
-                {totalProducts}
-              </p>
-            </div>
-          </div>
-        </div>
+      <HeroCard onAddProduct={handleAddProduct} />
 
-        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-green-50 flex items-center justify-center">
-              <HiStatusOnline className="w-6 h-6 text-green-600" />
-            </div>
-            <div>
-              <p className="text-sm font-bold text-gray-500">Active Products</p>
-              <p className="text-2xl font-black text-gray-900">
-                {activeProducts}
-              </p>
-            </div>
-          </div>
-        </div>
+      <StatCards
+        total={totalProducts}
+        active={activeProducts}
+        outOfStock={outOfStock}
+        lowStock={lowStock}
+        totalValue={totalValue}
+      />
 
-        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-red-50 flex items-center justify-center">
-              <HiStatusOffline className="w-6 h-6 text-red-600" />
-            </div>
-            <div>
-              <p className="text-sm font-bold text-gray-500">Out of Stock</p>
-              <p className="text-2xl font-black text-gray-900">{outOfStock}</p>
-            </div>
-          </div>
-        </div>
+      <FilterBar
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        categoryFilter={categoryFilter}
+        setCategoryFilter={setCategoryFilter}
+        statusFilter={statusFilter}
+        setStatusFilter={setStatusFilter}
+        sortBy={sortBy}
+        setSortBy={setSortBy}
+        categories={categories}
+        resultCount={sortedProducts.length}
+        totalCount={products.length}
+      />
 
-        <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-purple-50 flex items-center justify-center">
-              <HiCurrencyDollar className="w-6 h-6 text-purple-600" />
-            </div>
-            <div>
-              <p className="text-sm font-bold text-gray-500">Inventory Value</p>
-              <p className="text-2xl font-black text-gray-900">
-                ₦{(totalValue / 1000000).toFixed(1)}M
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-          {/* Search */}
-          <div className="md:col-span-2 relative">
-            <HiSearch className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search products..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none font-medium"
-            />
-          </div>
-
-          {/* Category Filter */}
-          <div className="relative">
-            <HiFilter className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-            <select
-              value={categoryFilter}
-              onChange={(e) => setCategoryFilter(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none font-bold text-gray-700 bg-white appearance-none cursor-pointer"
-            >
-              <option value="all">All Categories</option>
-              {categories.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
-            <HiChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
-          </div>
-
-          {/* Sort */}
-          <div className="relative">
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value)}
-              className="w-full px-4 py-2.5 border border-gray-200 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none font-bold text-gray-700 bg-white appearance-none cursor-pointer"
-            >
-              <option value="newest">Newest First</option>
-              <option value="oldest">Oldest First</option>
-              <option value="price_high">Price: High to Low</option>
-              <option value="price_low">Price: Low to High</option>
-              <option value="best_selling">Best Selling</option>
-              <option value="stock_low">Low Stock</option>
-            </select>
-            <HiChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
-          </div>
-        </div>
-
-        {/* Status Filter Tabs */}
-        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-          {[
-            { key: "all", label: "All Products" },
-            { key: "active", label: "Active" },
-            { key: "out_of_stock", label: "Out of Stock" },
-            { key: "inactive", label: "Inactive" },
-          ].map((status) => (
-            <button
-              key={status.key}
-              onClick={() => setStatusFilter(status.key)}
-              className={`px-4 py-2 rounded-xl font-bold text-sm transition-all duration-300 whitespace-nowrap ${
-                statusFilter === status.key
-                  ? "bg-green-600 text-white shadow-md"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
-            >
-              {status.label}
-            </button>
-          ))}
-        </div>
-
-        {/* Results Count */}
-        <div className="mt-4 pt-4 border-t border-gray-100">
-          <p className="text-sm font-bold text-gray-600">
-            Showing{" "}
-            <span className="text-green-600">{sortedProducts.length}</span> of{" "}
-            {products.length} products
-          </p>
-        </div>
-      </div>
-
-      {/* Products Table */}
       {loading ? (
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="inline-block w-12 h-12 border-4 border-green-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-            <p className="text-gray-600 font-medium">Loading products...</p>
-          </div>
+        <div className="loading-state">
+          <div className="loading-spinner" />
+          <p>Loading products...</p>
         </div>
       ) : sortedProducts.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-gray-200 p-12 text-center">
-          <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <HiShoppingBag className="w-10 h-10 text-gray-400" />
+        <div className="empty-state">
+          <div className="empty-icon">
+            <Package size={40} weight="duotone" />
           </div>
-          <p className="text-gray-900 text-xl font-black mb-2">
-            No products found
-          </p>
-          <p className="text-gray-500 font-medium">
-            Try adjusting your filters or search terms
-          </p>
+          <p className="empty-title">No products found</p>
+          <p className="empty-sub">Try adjusting your filters or search terms</p>
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-sm">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
-                <tr>
-                  <th className="text-left px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                    Product
-                  </th>
-                  <th className="text-left px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                    Category
-                  </th>
-                  <th className="text-left px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                    Price
-                  </th>
-                  <th className="text-left px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                    Stock
-                  </th>
-                  <th className="text-left px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                    Sold
-                  </th>
-                  <th className="text-left px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                    Rating
-                  </th>
-                  <th className="text-left px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="text-left px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {sortedProducts.map((product) => {
-                  const statusStyle = getStatusBadge(product.status);
-                  return (
-                    <tr
-                      key={product.id}
-                      className="hover:bg-gray-50 transition-colors"
-                    >
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 rounded-lg bg-gray-100 overflow-hidden">
-                            <img
-                              src={product.images[0]}
-                              alt={product.name}
-                              className="w-full h-full object-cover"
-                              onError={(e) => {
-                                e.target.src = "/Bg.PNG";
-                              }}
-                            />
-                          </div>
-                          <div>
-                            <p className="font-bold text-gray-900 truncate max-w-[200px]">
-                              {product.name}
-                            </p>
-                            <p className="text-xs text-gray-500">
-                              {product.vendor}
-                            </p>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-bold ${getCategoryColor(product.category)}`}
-                        >
-                          {product.category}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <p className="font-bold text-gray-900">
-                          ₦{product.price.toLocaleString()}
-                        </p>
-                        {product.originalPrice > product.price && (
-                          <p className="text-xs text-gray-500 line-through">
-                            ₦{product.originalPrice.toLocaleString()}
-                          </p>
-                        )}
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <span
-                            className={`font-bold ${product.stock === 0 ? "text-red-600" : product.stock < 20 ? "text-orange-600" : "text-gray-900"}`}
-                          >
-                            {product.stock}
-                          </span>
-                          {product.stock < 20 && product.stock > 0 && (
-                            <HiExclamationCircle className="w-4 h-4 text-orange-500" />
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <p className="font-bold text-gray-900">
-                          {product.sold}
-                        </p>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-1">
-                          <HiStar className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                          <span className="font-bold text-gray-900">
-                            {product.rating}
-                          </span>
-                          <span className="text-xs text-gray-500">
-                            ({product.reviews})
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-bold ${statusStyle.bg} ${statusStyle.text}`}
-                        >
-                          {statusStyle.label}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => setSelectedProduct(product)}
-                            className="p-2 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                            title="View"
-                          >
-                            <HiEye className="w-4 h-4" />
-                          </button>
-                          <button
-                            className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                            title="Edit"
-                          >
-                            <HiPencil className="w-4 h-4" />
-                          </button>
-                          <button
-                            onClick={() => setDeleteConfirmProduct(product)}
-                            className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                            title="Delete"
-                          >
-                            <HiTrash className="w-4 h-4" />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+        <div className="products-grid">
+          {sortedProducts.map((product, index) => (
+            <ProductCard
+              key={product.id}
+              product={product}
+              index={index}
+              onView={setSelectedProduct}
+              onEdit={handleEditProduct}
+              onDelete={setDeleteConfirmProduct}
+            />
+          ))}
         </div>
       )}
 
-      {/* Delete Confirmation Modal */}
-      {deleteConfirmProduct && (
-        <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-          onClick={() => setDeleteConfirmProduct(null)}
-        >
-          <div
-            className="bg-white rounded-2xl max-w-md w-full shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="p-6">
-              <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center mx-auto mb-4">
-                <HiExclamationCircle className="w-10 h-10 text-red-600" />
-              </div>
-              <h2 className="text-2xl font-black text-gray-900 text-center mb-2">
-                Delete Product?
-              </h2>
-              <p className="text-gray-600 text-center mb-6">
-                Are you sure you want to delete{" "}
-                <span className="font-black text-gray-900">
-                  {deleteConfirmProduct.name}
-                </span>
-                ? This action cannot be undone.
-              </p>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  onClick={() => setDeleteConfirmProduct(null)}
-                  className="px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-900 font-bold rounded-xl transition-all duration-300"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => deleteProduct(deleteConfirmProduct.id)}
-                  className="px-4 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl transition-all duration-300 shadow-md"
-                >
-                  Yes, Delete
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <DeleteModal
+        product={deleteConfirmProduct}
+        onClose={() => setDeleteConfirmProduct(null)}
+        onConfirm={deleteProduct}
+      />
 
-      {/* Product Details Modal */}
-      {selectedProduct && (
-        <div
-          className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4"
-          onClick={() => setSelectedProduct(null)}
-        >
-          <div
-            className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="relative h-48 bg-gradient-to-br from-green-500 to-green-600">
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
-              <button
-                onClick={() => setSelectedProduct(null)}
-                className="absolute top-4 right-4 w-10 h-10 rounded-xl bg-white/20 backdrop-blur-sm hover:bg-white/30 border border-white/30 flex items-center justify-center transition-all duration-300"
-              >
-                <HiX className="w-5 h-5 text-white" />
-              </button>
-            </div>
-
-            <div className="px-6 pb-6">
-              <div className="flex items-end gap-4 -mt-16 mb-4">
-                <div className="w-28 h-28 rounded-xl bg-white p-1 shadow-lg">
-                  <img
-                    src={selectedProduct.images[0]}
-                    alt={selectedProduct.name}
-                    className="w-full h-full object-cover rounded-lg"
-                    onError={(e) => {
-                      e.target.src = "/Bg.PNG";
-                    }}
-                  />
-                </div>
-                <div className="flex-1 pb-2">
-                  <h2 className="text-2xl font-black text-gray-900">
-                    {selectedProduct.name}
-                  </h2>
-                  <p className="text-gray-600">{selectedProduct.vendor}</p>
-                </div>
-              </div>
-
-              <div className="flex gap-2 mb-4">
-                <span
-                  className={`px-3 py-1 rounded-full text-xs font-bold ${getCategoryColor(selectedProduct.category)}`}
-                >
-                  {selectedProduct.category}
-                </span>
-                <span
-                  className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusBadge(selectedProduct.status).bg} ${getStatusBadge(selectedProduct.status).text}`}
-                >
-                  {getStatusBadge(selectedProduct.status).label}
-                </span>
-              </div>
-
-              <p className="text-gray-600 mb-6">
-                {selectedProduct.description}
-              </p>
-
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                <div className="bg-gray-50 rounded-xl p-4">
-                  <p className="text-xs text-gray-500 mb-1">Price</p>
-                  <p className="text-lg font-black text-gray-900">
-                    ₦{selectedProduct.price.toLocaleString()}
-                  </p>
-                </div>
-                <div className="bg-gray-50 rounded-xl p-4">
-                  <p className="text-xs text-gray-500 mb-1">Stock</p>
-                  <p className="text-lg font-black text-gray-900">
-                    {selectedProduct.stock}
-                  </p>
-                </div>
-                <div className="bg-gray-50 rounded-xl p-4">
-                  <p className="text-xs text-gray-500 mb-1">Sold</p>
-                  <p className="text-lg font-black text-gray-900">
-                    {selectedProduct.sold}
-                  </p>
-                </div>
-                <div className="bg-gray-50 rounded-xl p-4">
-                  <p className="text-xs text-gray-500 mb-1">Rating</p>
-                  <p className="text-lg font-black text-gray-900">
-                    {selectedProduct.rating}
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setSelectedProduct(null)}
-                  className="flex-1 px-6 py-4 bg-gray-900 hover:bg-gray-800 text-white font-black rounded-xl transition-all duration-300"
-                >
-                  Close
-                </button>
-                <button className="flex-1 px-6 py-4 bg-blue-600 hover:bg-blue-700 text-white font-black rounded-xl transition-all duration-300">
-                  Edit Product
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <ProductModal
+        product={selectedProduct}
+        onClose={() => setSelectedProduct(null)}
+        onEdit={handleEditProduct}
+      />
 
       <style>{`
-        .scrollbar-hide::-webkit-scrollbar {
-          display: none;
+        /* ═══════════════════════════════
+           Page Root & CSS Variables
+        ═══════════════════════════════ */
+        .page-root {
+          --green: #22c55e;
+          --green-dark: #16a34a;
+          --green-bg: rgba(34,197,94,0.1);
+          --green-border: rgba(34,197,94,0.25);
+          --bg-dark: #0a0a0a;
+          --bg-card: #141414;
+          --bg-card-hover: #1a1a1a;
+          --text-primary: #fff;
+          --text-secondary: rgba(255,255,255,0.7);
+          --text-muted: rgba(255,255,255,0.5);
+          --border-color: rgba(255,255,255,0.08);
         }
-        .scrollbar-hide {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
+
+        /* ═══════════════════════════════
+           Hero Card
+        ═══════════════════════════════ */
+        .hero-card {
+          background: linear-gradient(135deg, #0f3318 0%, #0a1f10 100%);
+          border-radius: 16px;
+          padding: 32px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          position: relative;
+          overflow: hidden;
+          margin-bottom: 24px;
+          border: 1px solid rgba(34,197,94,0.15);
+        }
+
+        .hero-grid-bg {
+          position: absolute;
+          inset: 0;
+          background-image: 
+            linear-gradient(rgba(34,197,94,0.05) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(34,197,94,0.05) 1px, transparent 1px);
+          background-size: 24px 24px;
+          pointer-events: none;
+        }
+
+        .hero-left {
+          position: relative;
+          z-index: 1;
+          max-width: 60%;
+        }
+
+        .hero-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          background: rgba(34,197,94,0.15);
+          border: 1px solid rgba(34,197,94,0.3);
+          padding: 6px 12px;
+          border-radius: 20px;
+          font-size: 11px;
+          font-weight: 600;
+          color: #22c55e;
+          margin-bottom: 16px;
+        }
+
+        .hero-title {
+          font-size: 28px;
+          font-weight: 800;
+          color: #fff;
+          margin-bottom: 12px;
+          line-height: 1.2;
+        }
+
+        .hero-sub {
+          font-size: 14px;
+          color: rgba(255,255,255,0.65);
+          line-height: 1.6;
+          margin-bottom: 24px;
+          max-width: 480px;
+        }
+
+        .hero-actions {
+          display: flex;
+          gap: 12px;
+        }
+
+        .hero-btn-primary {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 12px 24px;
+          background: #22c55e;
+          color: #000;
+          font-weight: 700;
+          font-size: 13px;
+          border: none;
+          border-radius: 10px;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .hero-btn-primary:hover {
+          background: #16a34a;
+          transform: translateY(-1px);
+        }
+
+        .hero-btn-ghost {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 12px 24px;
+          background: rgba(255,255,255,0.08);
+          color: #fff;
+          font-weight: 600;
+          font-size: 13px;
+          border: 1px solid rgba(255,255,255,0.12);
+          border-radius: 10px;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .hero-btn-ghost:hover {
+          background: rgba(255,255,255,0.12);
+        }
+
+        .hero-right {
+          position: relative;
+          z-index: 1;
+        }
+
+        .hero-icon-box {
+          width: 120px;
+          height: 120px;
+          background: rgba(34,197,94,0.1);
+          border: 1px solid rgba(34,197,94,0.2);
+          border-radius: 16px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #22c55e;
+        }
+
+        /* ═══════════════════════════════
+           Stats Bar
+        ═══════════════════════════════ */
+        .stats-bar {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 16px;
+          margin-bottom: 24px;
+        }
+
+        .stat-tile {
+          background: #141414;
+          border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 12px;
+          padding: 20px;
+        }
+
+        .stat-top-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: flex-start;
+          margin-bottom: 8px;
+        }
+
+        .stat-number-row {
+          display: flex;
+          align-items: baseline;
+        }
+
+        .stat-prefix {
+          font-size: 16px;
+          font-weight: 600;
+          color: #22c55e;
+          margin-right: 2px;
+        }
+
+        .stat-val {
+          font-size: 28px;
+          font-weight: 800;
+          color: #fff;
+          line-height: 1;
+        }
+
+        .stat-suffix {
+          font-size: 14px;
+          font-weight: 600;
+          color: #22c55e;
+          margin-left: 2px;
+        }
+
+        .stat-trend {
+          font-size: 11px;
+          font-weight: 600;
+          color: rgba(255,255,255,0.5);
+          background: rgba(255,255,255,0.05);
+          padding: 4px 8px;
+          border-radius: 6px;
+        }
+
+        .stat-label {
+          font-size: 13px;
+          font-weight: 600;
+          color: rgba(255,255,255,0.7);
+          margin-bottom: 4px;
+        }
+
+        .stat-sub {
+          font-size: 11px;
+          color: rgba(255,255,255,0.4);
+          margin-bottom: 12px;
+        }
+
+        .stat-bar-track {
+          height: 3px;
+          background: rgba(255,255,255,0.08);
+          border-radius: 2px;
+          overflow: hidden;
+        }
+
+        .stat-bar-fill {
+          height: 100%;
+          width: var(--bar-w);
+          background: linear-gradient(90deg, #22c55e, #16a34a);
+          border-radius: 2px;
+          transition: width 0.6s ease;
+        }
+
+        /* ═══════════════════════════════
+           Filter Bar
+        ═══════════════════════════════ */
+        .filter-bar {
+          background: #141414;
+          border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 12px;
+          padding: 20px;
+          margin-bottom: 24px;
+        }
+
+        .filter-row {
+          display: grid;
+          grid-template-columns: 2fr 1fr 1fr 1fr;
+          gap: 12px;
+          margin-bottom: 16px;
+        }
+
+        .filter-search {
+          position: relative;
+        }
+
+        .filter-search-icon {
+          position: absolute;
+          left: 14px;
+          top: 50%;
+          transform: translateY(-50%);
+          color: rgba(255,255,255,0.4);
+        }
+
+        .filter-search-input {
+          width: 100%;
+          padding: 12px 14px 12px 42px;
+          background: rgba(255,255,255,0.05);
+          border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 10px;
+          color: #fff;
+          font-size: 13px;
+          font-weight: 500;
+          outline: none;
+          transition: all 0.2s;
+        }
+
+        .filter-search-input::placeholder {
+          color: rgba(255,255,255,0.4);
+        }
+
+        .filter-search-input:focus {
+          border-color: #22c55e;
+          background: rgba(34,197,94,0.05);
+        }
+
+        .filter-group {
+          position: relative;
+        }
+
+        .filter-select {
+          width: 100%;
+          padding: 12px 36px 12px 14px;
+          background: rgba(255,255,255,0.05);
+          border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 10px;
+          color: #fff;
+          font-size: 13px;
+          font-weight: 500;
+          outline: none;
+          cursor: pointer;
+          appearance: none;
+          transition: all 0.2s;
+        }
+
+        .filter-select:focus {
+          border-color: #22c55e;
+          background: rgba(34,197,94,0.05);
+        }
+
+        .filter-select option {
+          background: #141414;
+          color: #fff;
+        }
+
+        .filter-select-icon {
+          position: absolute;
+          right: 14px;
+          top: 50%;
+          transform: translateY(-50%);
+          color: rgba(255,255,255,0.4);
+          pointer-events: none;
+        }
+
+        .filter-results {
+          font-size: 12px;
+          color: rgba(255,255,255,0.5);
+        }
+
+        .filter-results-count {
+          color: #22c55e;
+          font-weight: 700;
+        }
+
+        .filter-results-total {
+          color: rgba(255,255,255,0.7);
+          font-weight: 600;
+        }
+
+        /* ═══════════════════════════════
+           Products Grid
+        ═══════════════════════════════ */
+        .products-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 20px;
+        }
+
+        .product-card {
+          background: #141414;
+          border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 14px;
+          overflow: hidden;
+          transition: all 0.25s;
+        }
+
+        .product-card:hover {
+          border-color: rgba(34,197,94,0.3);
+          transform: translateY(-2px);
+        }
+
+        .product-image-wrap {
+          position: relative;
+          height: 180px;
+          background: #1a1a1a;
+          overflow: hidden;
+        }
+
+        .product-image {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          transition: transform 0.3s;
+        }
+
+        .product-card:hover .product-image {
+          transform: scale(1.05);
+        }
+
+        .product-image-overlay {
+          position: absolute;
+          inset: 0;
+          background: rgba(0,0,0,0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 8px;
+          opacity: 0;
+          transition: opacity 0.2s;
+        }
+
+        .product-card:hover .product-image-overlay {
+          opacity: 1;
+        }
+
+        .product-overlay-btn {
+          width: 36px;
+          height: 36px;
+          border-radius: 8px;
+          background: rgba(255,255,255,0.15);
+          border: 1px solid rgba(255,255,255,0.2);
+          color: #fff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .product-overlay-btn:hover {
+          background: #22c55e;
+          border-color: #22c55e;
+          color: #000;
+        }
+
+        .stock-badge {
+          position: absolute;
+          top: 12px;
+          right: 12px;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          padding: 5px 10px;
+          border-radius: 6px;
+          font-size: 10px;
+          font-weight: 700;
+        }
+
+        .stock-ok {
+          background: rgba(34,197,94,0.15);
+          color: #22c55e;
+          border: 1px solid rgba(34,197,94,0.25);
+        }
+
+        .stock-low {
+          background: rgba(245,158,11,0.15);
+          color: #f59e0b;
+          border: 1px solid rgba(245,158,11,0.25);
+        }
+
+        .stock-out {
+          background: rgba(239,68,68,0.15);
+          color: #ef4444;
+          border: 1px solid rgba(239,68,68,0.25);
+        }
+
+        .product-body {
+          padding: 16px;
+        }
+
+        .product-category-row {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 8px;
+        }
+
+        .product-category {
+          font-size: 10px;
+          font-weight: 600;
+          color: rgba(255,255,255,0.5);
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        .sbadge {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          padding: 4px 8px;
+          border-radius: 6px;
+          font-size: 9px;
+          font-weight: 700;
+        }
+
+        .product-name {
+          font-size: 14px;
+          font-weight: 700;
+          color: #fff;
+          margin-bottom: 6px;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .product-vendor {
+          display: flex;
+          align-items: center;
+          gap: 5px;
+          font-size: 11px;
+          color: rgba(255,255,255,0.5);
+          margin-bottom: 12px;
+        }
+
+        .product-price-row {
+          display: flex;
+          align-items: baseline;
+          gap: 8px;
+          margin-bottom: 12px;
+        }
+
+        .product-price {
+          font-size: 18px;
+          font-weight: 800;
+          color: #22c55e;
+        }
+
+        .product-original-price {
+          font-size: 12px;
+          color: rgba(255,255,255,0.4);
+          text-decoration: line-through;
+        }
+
+        .product-stats-row {
+          display: flex;
+          justify-content: space-between;
+          padding: 12px 0;
+          border-top: 1px solid rgba(255,255,255,0.06);
+          border-bottom: 1px solid rgba(255,255,255,0.06);
+          margin-bottom: 12px;
+        }
+
+        .product-stat {
+          text-align: center;
+        }
+
+        .product-stat-label {
+          display: block;
+          font-size: 9px;
+          color: rgba(255,255,255,0.4);
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          margin-bottom: 2px;
+        }
+
+        .product-stat-value {
+          font-size: 12px;
+          font-weight: 700;
+          color: #fff;
+        }
+
+        .product-stat-value.rating {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 3px;
+        }
+
+        .product-actions {
+          display: flex;
+          gap: 8px;
+        }
+
+        .product-action-btn {
+          flex: 1;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 5px;
+          padding: 10px;
+          border-radius: 8px;
+          font-size: 11px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s;
+          border: none;
+        }
+
+        .product-view {
+          background: rgba(34,197,94,0.1);
+          color: #22c55e;
+          border: 1px solid rgba(34,197,94,0.2);
+        }
+
+        .product-view:hover {
+          background: rgba(34,197,94,0.2);
+        }
+
+        .product-edit {
+          background: rgba(59,130,246,0.1);
+          color: #3b82f6;
+          border: 1px solid rgba(59,130,246,0.2);
+        }
+
+        .product-edit:hover {
+          background: rgba(59,130,246,0.2);
+        }
+
+        .product-delete {
+          flex: 0 0 40px;
+          background: rgba(239,68,68,0.1);
+          color: #ef4444;
+          border: 1px solid rgba(239,68,68,0.2);
+        }
+
+        .product-delete:hover {
+          background: rgba(239,68,68,0.2);
+        }
+
+        /* ═══════════════════════════════
+           Loading & Empty States
+        ═══════════════════════════════ */
+        .loading-state {
+          text-align: center;
+          padding: 60px 20px;
+        }
+
+        .loading-spinner {
+          width: 40px;
+          height: 40px;
+          border: 3px solid rgba(34,197,94,0.15);
+          border-top-color: #22c55e;
+          border-radius: 50%;
+          animation: spin 0.8s linear infinite;
+          margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+
+        .loading-state p {
+          color: rgba(255,255,255,0.5);
+          font-size: 13px;
+        }
+
+        .empty-state {
+          text-align: center;
+          padding: 60px 20px;
+          background: #141414;
+          border: 1px solid rgba(255,255,255,0.08);
+          border-radius: 14px;
+        }
+
+        .empty-icon {
+          width: 80px;
+          height: 80px;
+          background: rgba(255,255,255,0.05);
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0 auto 20px;
+          color: rgba(255,255,255,0.3);
+        }
+
+        .empty-title {
+          font-size: 18px;
+          font-weight: 700;
+          color: #fff;
+          margin-bottom: 8px;
+        }
+
+        .empty-sub {
+          font-size: 13px;
+          color: rgba(255,255,255,0.5);
+        }
+
+        /* ═══════════════════════════════
+           Modals
+        ═══════════════════════════════ */
+        .overlay {
+          position: fixed;
+          inset: 0;
+          background: rgba(0,0,0,0.7);
+          backdrop-filter: blur(4px);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 100;
+          padding: 20px;
+        }
+
+        .mbox {
+          background: #141414;
+          border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 16px;
+          width: 100%;
+          max-width: 480px;
+          overflow: hidden;
+          animation: modalIn 0.2s ease;
+        }
+
+        .mbox-danger {
+          max-width: 400px;
+        }
+
+        @keyframes modalIn {
+          from {
+            opacity: 0;
+            transform: scale(0.95);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+
+        .mheader {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 20px;
+          border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .mheader-icon {
+          width: 40px;
+          height: 40px;
+          border-radius: 10px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .mheader-icon-danger {
+          background: rgba(239,68,68,0.15);
+          color: #ef4444;
+        }
+
+        .moid {
+          font-size: 16px;
+          font-weight: 700;
+          color: #fff;
+        }
+
+        .mosub {
+          font-size: 12px;
+          color: rgba(255,255,255,0.5);
+          display: flex;
+          align-items: center;
+          gap: 5px;
+        }
+
+        .mclose {
+          margin-left: auto;
+          width: 32px;
+          height: 32px;
+          border-radius: 8px;
+          background: rgba(255,255,255,0.05);
+          border: none;
+          color: rgba(255,255,255,0.5);
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.2s;
+        }
+
+        .mclose:hover {
+          background: rgba(255,255,255,0.1);
+          color: #fff;
+        }
+
+        .mbody {
+          padding: 20px;
+        }
+
+        .delete-message {
+          font-size: 13px;
+          color: rgba(255,255,255,0.7);
+          line-height: 1.6;
+          margin-bottom: 20px;
+        }
+
+        .delete-message strong {
+          color: #fff;
+        }
+
+        .mdelete-actions {
+          display: flex;
+          gap: 12px;
+        }
+
+        .mbtn {
+          flex: 1;
+          padding: 12px 20px;
+          border-radius: 10px;
+          font-size: 13px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.2s;
+          border: none;
+        }
+
+        .mbtn-cancel {
+          background: rgba(255,255,255,0.08);
+          color: #fff;
+          border: 1px solid rgba(255,255,255,0.12);
+        }
+
+        .mbtn-cancel:hover {
+          background: rgba(255,255,255,0.12);
+        }
+
+        .mbtn-danger {
+          background: #ef4444;
+          color: #fff;
+        }
+
+        .mbtn-danger:hover {
+          background: #dc2626;
+        }
+
+        .mbtn-primary {
+          background: #22c55e;
+          color: #000;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 6px;
+        }
+
+        .mbtn-primary:hover {
+          background: #16a34a;
+        }
+
+        .mbtn-secondary {
+          background: rgba(255,255,255,0.08);
+          color: #fff;
+          border: 1px solid rgba(255,255,255,0.12);
+        }
+
+        .mbtn-secondary:hover {
+          background: rgba(255,255,255,0.12);
+        }
+
+        .mactions {
+          display: flex;
+          gap: 12px;
+          margin-top: 20px;
+        }
+
+        .mactions .mbtn {
+          flex: 1;
+        }
+
+        /* Product Modal Specifics */
+        .mproduct-banner {
+          height: 200px;
+          border-radius: 12px;
+          overflow: hidden;
+          background: #1a1a1a;
+          margin-bottom: 20px;
+        }
+
+        .mproduct-image {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .mproduct-details {
+          margin-bottom: 20px;
+        }
+
+        .mproduct-row {
+          display: flex;
+          justify-content: space-between;
+          padding: 10px 0;
+          border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .mproduct-label {
+          font-size: 12px;
+          color: rgba(255,255,255,0.5);
+        }
+
+        .mproduct-value {
+          font-size: 13px;
+          font-weight: 600;
+          color: #fff;
+        }
+
+        .mproduct-stats-grid {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 12px;
+          margin-bottom: 20px;
+        }
+
+        .mproduct-stat-box {
+          background: rgba(255,255,255,0.05);
+          border-radius: 10px;
+          padding: 14px;
+          text-align: center;
+        }
+
+        .mproduct-stat-box .mproduct-stat-label {
+          margin-bottom: 6px;
+        }
+
+        .mproduct-stat-box .mproduct-stat-value {
+          font-size: 16px;
+          font-weight: 800;
+          color: #22c55e;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 2px;
+        }
+
+        .mproduct-stat-box .mproduct-stat-value.orig {
+          font-size: 13px;
+          color: rgba(255,255,255,0.4);
+          text-decoration: line-through;
+        }
+
+        /* ═══════════════════════════════
+           Toast
+        ═══════════════════════════════ */
+        .toast-container {
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          z-index: 200;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+
+        .toast {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 14px 18px;
+          background: #141414;
+          border: 1px solid rgba(255,255,255,0.1);
+          border-radius: 12px;
+          min-width: 280px;
+          box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+        }
+
+        .toast-in {
+          animation: toastIn 0.3s ease forwards;
+        }
+
+        .toast-out {
+          animation: toastOut 0.3s ease forwards;
+        }
+
+        @keyframes toastIn {
+          from {
+            opacity: 0;
+            transform: translateX(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+
+        @keyframes toastOut {
+          from {
+            opacity: 1;
+            transform: translateX(0);
+          }
+          to {
+            opacity: 0;
+            transform: translateX(20px);
+          }
+        }
+
+        .toast-title {
+          font-size: 13px;
+          font-weight: 700;
+          color: #fff;
+        }
+
+        .toast-sub {
+          font-size: 11px;
+          color: rgba(255,255,255,0.5);
+        }
+
+        .naira {
+          font-size: 0.85em;
+        }
+
+        /* ═══════════════════════════════
+           Animations
+        ═══════════════════════════════ */
+        .fade-up {
+          animation: fadeUp 0.4s ease forwards;
+          opacity: 0;
+        }
+
+        @keyframes fadeUp {
+          from {
+            opacity: 0;
+            transform: translateY(12px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        /* ═══════════════════════════════
+           Responsive
+        ═══════════════════════════════ */
+        @media (max-width: 1200px) {
+          .products-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
+        }
+
+        @media (max-width: 992px) {
+          .stats-bar {
+            grid-template-columns: repeat(2, 1fr);
+          }
+
+          .filter-row {
+            grid-template-columns: 1fr 1fr;
+          }
+        }
+
+        @media (max-width: 768px) {
+          .hero-card {
+            flex-direction: column;
+            text-align: center;
+          }
+
+          .hero-left {
+            max-width: 100%;
+          }
+
+          .hero-sub {
+            max-width: 100%;
+          }
+
+          .hero-actions {
+            justify-content: center;
+            flex-wrap: wrap;
+          }
+
+          .hero-right {
+            margin-top: 24px;
+          }
+
+          .products-grid {
+            grid-template-columns: 1fr;
+          }
+
+          .filter-row {
+            grid-template-columns: 1fr;
+          }
+
+          .mproduct-stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+          }
         }
       `}</style>
     </div>

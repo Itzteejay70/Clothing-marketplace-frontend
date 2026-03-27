@@ -28,6 +28,9 @@ import AllProducts from "../pages/admin/AllProducts";
 import Categories from "../pages/admin/Categories";
 import PaymentReports from "../pages/admin/PaymentReports";
 import Reports from "../pages/admin/Reports";
+import Notifications from "../pages/admin/Notifications";
+import ViewStore from "../pages/admin/ViewStore";
+import AdminProfile from "../pages/admin/Profile";
 
 //Brands imports
 import VendorLogin from "../pages/auth/VendorLogin";
@@ -38,7 +41,6 @@ import VendorProducts from "../pages/vendor/Products";
 import VendorOrders from "../pages/vendor/Orders";
 import VendorPayouts from "../pages/vendor/Payouts";
 import VendorSettings from "../pages/vendor/Settings";
-
 
 export default function AppRoutes() {
   return (
@@ -86,15 +88,18 @@ export default function AppRoutes() {
         <Route path="orders" element={<Orders />} />
         <Route path="users" element={<Users />} />
         <Route path="settings" element={<Settings />} />
+        <Route path="notifications" element={<Notifications />} />
+        <Route path="view-store" element={<ViewStore />} />
+        <Route path="profile" element={<AdminProfile />} />
         <Route path="analytics" element={<Analytics />} />
         <Route path="products" element={<AllProducts />} />
         <Route path="categories" element={<Categories />} />
         <Route path="payments" element={<PaymentReports />} />
         <Route path="reports" element={<Reports />} />
       </Route>
-    
-    <Route path="/vendor/login" element={<VendorLogin />} />
-     <Route
+
+      <Route path="/vendor/login" element={<VendorLogin />} />
+      <Route
         path="/vendor"
         element={
           <VendorRoute>
@@ -109,8 +114,7 @@ export default function AppRoutes() {
         <Route path="payouts" element={<VendorPayouts />} />
         <Route path="settings" element={<VendorSettings />} />
         <Route path="products" element={<VendorProducts />} />
-</Route>
-
+      </Route>
     </Routes>
   );
 }

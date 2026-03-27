@@ -1,42 +1,341 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
-  HiTrendingUp,
-  HiTrendingDown,
-  HiDownload,
-  HiCalendar,
-  HiRefresh,
-  HiCurrencyDollar,
-  HiShoppingCart,
-  HiUsers,
-  HiShoppingBag,
-  HiArrowUp,
-  HiArrowDown,
-  HiChartBar,
-} from "react-icons/hi";
+  TrendUp,
+  TrendDown,
+  Download,
+  CalendarBlank,
+  ArrowClockwise,
+  CurrencyNgn,
+  ShoppingCart,
+  Users,
+  ShoppingBag,
+  ArrowUp,
+  ArrowDown,
+  ChartBar,
+  Star,
+  Storefront,
+  Warning,
+  CheckCircle,
+  CaretDown,
+  Funnel,
+} from "@phosphor-icons/react";
 
+/* ─────────────────────────────────────────
+   Toast Notification
+───────────────────────────────────────── */
+function Toast({ toasts }) {
+  return (
+    <div className="toast-container">
+      {toasts.map((t) => (
+        <div
+          key={t.id}
+          className={`toast toast-${t.type} ${t.removing ? "toast-out" : "toast-in"}`}
+        >
+          <div className="toast-icon">
+            {t.type === "success" ? (
+              <CheckCircle size={16} weight="fill" color="#22c55e" />
+            ) : (
+              <Warning size={16} weight="fill" color="#ef4444" />
+            )}
+          </div>
+          <div className="toast-body">
+            <div className="toast-title">{t.title}</div>
+            <div className="toast-sub">{t.sub}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────
+   Animated Counter Hook
+───────────────────────────────────────── */
+function useCountUp(target, duration = 600) {
+  const [count, setCount] = useState(target);
+  const prev = useRef(target);
+  useEffect(() => {
+    if (prev.current === target) return;
+    const from = prev.current;
+    prev.current = target;
+    const diff = target - from;
+    const steps = Math.min(Math.abs(diff), 30);
+    const inc = diff / steps;
+    let current = from;
+    let step = 0;
+    const timer = setInterval(
+      () => {
+        step++;
+        current += inc;
+        setCount(step >= steps ? target : Math.round(current));
+        if (step >= steps) clearInterval(timer);
+      },
+      Math.max(16, Math.floor(duration / steps)),
+    );
+    return () => clearInterval(timer);
+  }, [target, duration]);
+  return count;
+}
+
+/* ─────────────────────────────────────────
+   Hero Card
+───────────────────────────────────────── */
+function HeroCard({ onExport }) {
+  return (
+    <div className="hero-card">
+      <div className="hero-grid" />
+      <div className="hero-left">
+        <div className="hero-badge">
+          <ChartBar size={11} weight="fill" /> Sales Reports
+        </div>
+        <h1 className="hero-title">Comprehensive Sales Analytics</h1>
+        <p className="hero-sub">
+          Get detailed insights into your platform performance. Analyze sales
+          trends, top performing categories, and vendor rankings.
+        </p>
+        <div className="hero-actions">
+          <button className="hero-btn-primary" onClick={onExport}>
+            <Download size={15} weight="bold" /> Export Report
+          </button>
+          <button className="hero-btn-ghost" onClick={onExport}>
+            Schedule Report
+          </button>
+        </div>
+      </div>
+      <div className="hero-right">
+        <img
+          src="/assets/categories/Removed-Bg-Nike-shoe.jpg"
+          alt="Reports"
+          className="hero-img"
+        />
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────
+   Stat Cards
+───────────────────────────────────────── */
+function StatCards({ revenue, orders, users, conversion }) {
+  const rv = useCountUp(Math.floor(revenue / 1000000));
+  const od = useCountUp(Math.floor(orders / 1000));
+  const us = useCountUp(Math.floor(users / 1000));
+  const cv = useCountUp(parseFloat(conversion));
+
+  const cards = [
+    {
+      label: "Total Revenue",
+      value: rv,
+      suffix: "M",
+      prefix: <span className="naira">₦</span>,
+      sub: "Platform revenue",
+      bar: 100,
+      trend: "+12.5%",
+      trendUp: true,
+      delay: "60ms",
+    },
+    {
+      label: "Total Orders",
+      value: od,
+      suffix: "k",
+      prefix: "",
+      sub: "All time orders",
+      bar: 78,
+      trend: "+8.3%",
+      trendUp: true,
+      delay: "120ms",
+    },
+    {
+      label: "New Users",
+      value: us,
+      suffix: "k",
+      prefix: "",
+      sub: "This period",
+      bar: 65,
+      trend: "+15.2%",
+      trendUp: true,
+      delay: "180ms",
+    },
+    {
+      label: "Conversion Rate",
+      value: cv,
+      suffix: "%",
+      prefix: "",
+      sub: "Average rate",
+      bar: 52,
+      trend: "+0.8%",
+      trendUp: true,
+      delay: "240ms",
+    },
+  ];
+
+  return (
+    <div className="stats-bar">
+      {cards.map((c, i) => (
+        <div
+          key={i}
+          className="stat-tile fade-up"
+          style={{ animationDelay: c.delay }}
+        >
+          <div className="stat-top-row">
+            <div className="stat-number-row">
+              <span className="stat-prefix">{c.prefix}</span>
+              <span className="stat-val">{c.value.toLocaleString()}</span>
+              <span className="stat-suffix">{c.suffix}</span>
+            </div>
+            <span className={`stat-trend ${c.trendUp ? 'trend-up' : 'trend-down'}`}>
+              {c.trendUp ? <ArrowUp size={10} weight="bold" /> : <ArrowDown size={10} weight="bold" />}
+              {c.trend}
+            </span>
+          </div>
+          <div className="stat-label">{c.label}</div>
+          <div className="stat-sub">{c.sub}</div>
+          <div className="stat-bar-track">
+            <div
+              className="stat-bar-fill"
+              style={{ "--bar-w": `${Math.max(c.bar, 2)}%` }}
+            />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────
+   Sales Chart Component
+───────────────────────────────────────── */
+function SalesChart({ data }) {
+  const maxRevenue = Math.max(...data.map((d) => d.revenue));
+
+  return (
+    <div className="chart-card fade-up">
+      <div className="chart-header">
+        <div className="chart-title-wrap">
+          <CurrencyNgn size={16} weight="fill" color="#22c55e" />
+          <h3 className="chart-title">Revenue Trend</h3>
+        </div>
+        <span className="chart-sub">Monthly performance</span>
+      </div>
+      <div className="chart-body">
+        <div className="bar-chart">
+          {data.map((item, index) => (
+            <div key={index} className="bar-item">
+              <div className="bar-wrapper">
+                <div
+                  className="bar-fill"
+                  style={{ height: `${(item.revenue / maxRevenue) * 100}%` }}
+                />
+                <div className="bar-tooltip">
+                  ₦{(item.revenue / 1000000).toFixed(1)}M
+                </div>
+              </div>
+              <span className="bar-label">{item.month}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────
+   Top Categories Component
+───────────────────────────────────────── */
+function TopCategories({ categories }) {
+  return (
+    <div className="chart-card fade-up" style={{ animationDelay: "100ms" }}>
+      <div className="chart-header">
+        <div className="chart-title-wrap">
+          <ShoppingBag size={16} weight="fill" color="#a855f7" />
+          <h3 className="chart-title">Top Categories</h3>
+        </div>
+        <span className="chart-sub">By revenue</span>
+      </div>
+      <div className="chart-body">
+        <div className="rank-list">
+          {categories.map((cat, index) => (
+            <div key={index} className="rank-item">
+              <div className="rank-num">{index + 1}</div>
+              <div className="rank-info">
+                <div className="rank-name">{cat.name}</div>
+                <div className="rank-revenue">
+                  <span className="naira">₦</span>
+                  {(cat.revenue / 1000000).toFixed(1)}M
+                </div>
+              </div>
+              <div className={`rank-growth ${cat.growth >= 0 ? 'positive' : 'negative'}`}>
+                {cat.growth >= 0 ? '+' : ''}{cat.growth}%
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────
+   Top Vendors Component
+───────────────────────────────────────── */
+function TopVendors({ vendors }) {
+  return (
+    <div className="chart-card fade-up" style={{ animationDelay: "150ms" }}>
+      <div className="chart-header">
+        <div className="chart-title-wrap">
+          <Storefront size={16} weight="fill" color="#3b82f6" />
+          <h3 className="chart-title">Top Vendors</h3>
+        </div>
+        <span className="chart-sub">By orders</span>
+      </div>
+      <div className="chart-body">
+        <div className="rank-list">
+          {vendors.map((vendor, index) => (
+            <div key={index} className="rank-item">
+              <div className="rank-num">{index + 1}</div>
+              <div className="rank-info">
+                <div className="rank-name">{vendor.name}</div>
+                <div className="rank-meta">
+                  {vendor.orders} orders · <span className="naira">₦</span>
+                  {(vendor.revenue / 1000000).toFixed(1)}M
+                </div>
+              </div>
+              <div className="rank-rating">
+                <Star size={12} weight="fill" color="#f59e0b" />
+                {vendor.rating}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─────────────────────────────────────────
+   Main Component
+───────────────────────────────────────── */
 export default function Reports() {
   const [timeRange, setTimeRange] = useState("30days");
   const [loading, setLoading] = useState(true);
   const [salesData, setSalesData] = useState([]);
+  const [toasts, setToasts] = useState([]);
+
+  const addToast = (type, title, sub) => {
+    const id = Date.now();
+    setToasts((prev) => [...prev, { id, type, title, sub, removing: false }]);
+    setTimeout(() => {
+      setToasts((prev) => prev.map((t) => (t.id === id ? { ...t, removing: true } : t)));
+      setTimeout(() => {
+        setToasts((prev) => prev.filter((t) => t.id !== id));
+      }, 300);
+    }, 3000);
+  };
 
   useEffect(() => {
     setLoading(true);
     setTimeout(() => {
-      // Generate monthly sales data
-      const months = [
-        "Jan",
-        "Feb",
-        "Mar",
-        "Apr",
-        "May",
-        "Jun",
-        "Jul",
-        "Aug",
-        "Sep",
-        "Oct",
-        "Nov",
-        "Dec",
-      ];
+      const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
       const currentMonth = new Date().getMonth();
       const data = [];
 
@@ -63,13 +362,6 @@ export default function Reports() {
     salesData.length
   ).toFixed(1);
 
-  // Previous period comparison
-  const revenueGrowth = 12.5;
-  const ordersGrowth = 8.3;
-  const usersGrowth = 15.2;
-  const conversionGrowth = 0.8;
-
-  // Top performing data
   const topCategories = [
     { name: "Sneakers", revenue: 12500000, growth: 18.5 },
     { name: "Hoodies", revenue: 8200000, growth: 12.3 },
@@ -84,306 +376,709 @@ export default function Reports() {
     { name: "Sports Hub NG", orders: 234, revenue: 8200000, rating: 4.7 },
   ];
 
-  const maxRevenue = Math.max(...salesData.map((d) => d.revenue));
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-green-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-500">Loading reports...</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-800">Reports</h1>
-          <p className="text-gray-500 text-sm mt-1">
-            Comprehensive business performance reports
-          </p>
-        </div>
-        <div className="flex items-center gap-3">
-          <select
-            value={timeRange}
-            onChange={(e) => setTimeRange(e.target.value)}
-            className="px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-green-500"
-          >
-            <option value="7days">Last 7 Days</option>
-            <option value="30days">Last 30 Days</option>
-            <option value="90days">Last 90 Days</option>
-            <option value="year">This Year</option>
-          </select>
-          <button className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
-            <HiDownload className="w-4 h-4" />
-            Export Report
-          </button>
-        </div>
+    <div className="reports-page">
+      <Toast toasts={toasts} />
+
+      {/* Hero Card */}
+      <HeroCard onExport={() => addToast("success", "Report Ready", "Your report has been generated")} />
+
+      {/* Filter Bar */}
+      <div className="filter-bar fade-up" style={{ animationDelay: "50ms" }}>
+        <select
+          value={timeRange}
+          onChange={(e) => setTimeRange(e.target.value)}
+          className="filter-select"
+        >
+          <option value="7days">Last 7 Days</option>
+          <option value="30days">Last 30 Days</option>
+          <option value="90days">Last 90 Days</option>
+          <option value="year">This Year</option>
+        </select>
+        <button className="refresh-btn">
+          <ArrowClockwise size={16} weight="bold" />
+        </button>
       </div>
 
-      {/* Summary Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-          <div className="flex items-center justify-between mb-3">
-            <div className="p-3 rounded-lg bg-green-100">
-              <HiCurrencyDollar className="w-5 h-5 text-green-600" />
-            </div>
-            <div
-              className={`flex items-center gap-1 text-sm font-medium ${revenueGrowth >= 0 ? "text-green-600" : "text-red-600"}`}
-            >
-              {revenueGrowth >= 0 ? (
-                <HiArrowUp className="w-4 h-4" />
-              ) : (
-                <HiArrowDown className="w-4 h-4" />
-              )}
-              {Math.abs(revenueGrowth)}%
-            </div>
+      {/* Loading State */}
+      {loading ? (
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p className="loading-text">Loading reports...</p>
+        </div>
+      ) : (
+        <>
+          {/* Stat Cards */}
+          <StatCards
+            revenue={totalRevenue}
+            orders={totalOrders}
+            users={totalUsers}
+            conversion={avgConversion}
+          />
+
+          {/* Charts Row */}
+          <div className="charts-row">
+            <SalesChart data={salesData} />
+            <TopCategories categories={topCategories} />
+            <TopVendors vendors={topVendors} />
           </div>
-          <p className="text-gray-500 text-sm">Total Revenue</p>
-          <p className="text-2xl font-bold text-gray-800 mt-1">
-            ₦{(totalRevenue / 1000000).toFixed(1)}M
-          </p>
-        </div>
+        </>
+      )}
 
-        <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-          <div className="flex items-center justify-between mb-3">
-            <div className="p-3 rounded-lg bg-blue-100">
-              <HiShoppingCart className="w-5 h-5 text-blue-600" />
-            </div>
-            <div
-              className={`flex items-center gap-1 text-sm font-medium ${ordersGrowth >= 0 ? "text-green-600" : "text-red-600"}`}
-            >
-              {ordersGrowth >= 0 ? (
-                <HiArrowUp className="w-4 h-4" />
-              ) : (
-                <HiArrowDown className="w-4 h-4" />
-              )}
-              {Math.abs(ordersGrowth)}%
-            </div>
-          </div>
-          <p className="text-gray-500 text-sm">Total Orders</p>
-          <p className="text-2xl font-bold text-gray-800 mt-1">
-            {totalOrders.toLocaleString()}
-          </p>
-        </div>
+      {/* CSS Styles */}
+      <style>{`
+        .reports-page {
+          padding: 24px;
+          max-width: 1600px;
+          margin: 0 auto;
+        }
 
-        <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-          <div className="flex items-center justify-between mb-3">
-            <div className="p-3 rounded-lg bg-purple-100">
-              <HiUsers className="w-5 h-5 text-purple-600" />
-            </div>
-            <div
-              className={`flex items-center gap-1 text-sm font-medium ${usersGrowth >= 0 ? "text-green-600" : "text-red-600"}`}
-            >
-              {usersGrowth >= 0 ? (
-                <HiArrowUp className="w-4 h-4" />
-              ) : (
-                <HiArrowDown className="w-4 h-4" />
-              )}
-              {Math.abs(usersGrowth)}%
-            </div>
-          </div>
-          <p className="text-gray-500 text-sm">New Users</p>
-          <p className="text-2xl font-bold text-gray-800 mt-1">
-            {totalUsers.toLocaleString()}
-          </p>
-        </div>
+        /* Hero Card */
+        .hero-card {
+          position: relative;
+          overflow: hidden;
+          width: 100%;
+          border-radius: 20px;
+          background: #0f3318;
+          margin-bottom: 22px;
+          height: 280px;
+          animation: fadeUp 0.45s ease-out forwards;
+          display: flex;
+          border: 1px solid rgba(34, 197, 94, 0.12);
+        }
 
-        <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-          <div className="flex items-center justify-between mb-3">
-            <div className="p-3 rounded-lg bg-orange-100">
-              <HiChartBar className="w-5 h-5 text-orange-600" />
-            </div>
-            <div
-              className={`flex items-center gap-1 text-sm font-medium ${conversionGrowth >= 0 ? "text-green-600" : "text-red-600"}`}
-            >
-              {conversionGrowth >= 0 ? (
-                <HiArrowUp className="w-4 h-4" />
-              ) : (
-                <HiArrowDown className="w-4 h-4" />
-              )}
-              {Math.abs(conversionGrowth)}%
-            </div>
-          </div>
-          <p className="text-gray-500 text-sm">Conversion Rate</p>
-          <p className="text-2xl font-bold text-gray-800 mt-1">
-            {avgConversion}%
-          </p>
-        </div>
-      </div>
+        .hero-grid {
+          position: absolute;
+          inset: 0;
+          background-image: linear-gradient(rgba(34, 197, 94, 0.04) 1px, transparent 1px),
+                            linear-gradient(90deg, rgba(34, 197, 94, 0.04) 1px, transparent 1px);
+          background-size: 32px 32px;
+          pointer-events: none;
+        }
 
-      {/* Revenue Chart */}
-      <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-        <h3 className="text-lg font-semibold text-gray-800 mb-6">
-          Revenue & Orders Trend
-        </h3>
-        <div className="h-64 flex items-end justify-between gap-4">
-          {salesData.map((item, index) => (
-            <div key={index} className="flex-1 flex flex-col items-center">
-              <div className="w-full bg-gray-100 rounded-t-lg relative group">
-                <div
-                  className="w-full bg-gradient-to-t from-green-600 to-green-500 rounded-t-lg transition-all duration-500"
-                  style={{
-                    height: `${(item.revenue / maxRevenue) * 220}px`,
-                  }}
-                ></div>
-                <div className="absolute bottom-full mb-2 hidden group-hover:block bg-gray-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap z-10">
-                  ₦{item.revenue.toLocaleString()}
-                </div>
-              </div>
-              <span className="text-xs text-gray-500 mt-2">{item.month}</span>
-            </div>
-          ))}
-        </div>
-      </div>
+        .hero-left {
+          flex: 1;
+          padding: 40px;
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: flex-start;
+          position: relative;
+          z-index: 2;
+        }
 
-      {/* Bottom Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Top Categories */}
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">
-            Top Categories
-          </h3>
-          <div className="space-y-4">
-            {topCategories.map((category, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between pb-3 border-b border-gray-50 last:border-0"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center text-green-600 font-bold text-xs">
-                    {index + 1}
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-800">
-                      {category.name}
-                    </p>
-                    <p className="text-xs text-gray-500">Revenue</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-semibold text-gray-800">
-                    ₦{(category.revenue / 1000000).toFixed(1)}M
-                  </p>
-                  <p
-                    className={`text-xs ${category.growth >= 0 ? "text-green-600" : "text-red-600"}`}
-                  >
-                    {category.growth >= 0 ? "+" : ""}
-                    {category.growth}%
-                  </p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
+        .hero-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          padding: 6px 12px;
+          background: rgba(34, 197, 94, 0.12);
+          border: 1px solid rgba(34, 197, 94, 0.25);
+          border-radius: 20px;
+          font-size: 11px;
+          font-weight: 600;
+          color: #22c55e;
+          margin-bottom: 16px;
+        }
 
-        {/* Top Vendors */}
-        <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4">
-            Top Vendors
-          </h3>
-          <div className="space-y-4">
-            {topVendors.map((vendor, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between pb-3 border-b border-gray-50 last:border-0"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center text-purple-600 font-bold text-xs">
-                    {index + 1}
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-gray-800">
-                      {vendor.name}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {vendor.orders} orders
-                    </p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="text-sm font-semibold text-gray-800">
-                    ₦{(vendor.revenue / 1000000).toFixed(1)}M
-                  </p>
-                  <p className="text-xs text-yellow-600">★ {vendor.rating}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+        .hero-title {
+          font-size: 32px;
+          font-weight: 700;
+          color: #fff;
+          margin: 0 0 12px 0;
+          line-height: 1.2;
+        }
 
-      {/* Performance Metrics */}
-      <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">
-          Monthly Breakdown
-        </h3>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="text-left px-4 py-3 text-xs font-bold text-gray-500 uppercase">
-                  Month
-                </th>
-                <th className="text-right px-4 py-3 text-xs font-bold text-gray-500 uppercase">
-                  Revenue
-                </th>
-                <th className="text-right px-4 py-3 text-xs font-bold text-gray-500 uppercase">
-                  Orders
-                </th>
-                <th className="text-right px-4 py-3 text-xs font-bold text-gray-500 uppercase">
-                  New Users
-                </th>
-                <th className="text-right px-4 py-3 text-xs font-bold text-gray-500 uppercase">
-                  Conversion
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {salesData.map((data, index) => (
-                <tr key={index} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 font-medium text-gray-800">
-                    {data.month}
-                  </td>
-                  <td className="px-4 py-3 text-right font-bold text-gray-900">
-                    ₦{data.revenue.toLocaleString()}
-                  </td>
-                  <td className="px-4 py-3 text-right text-gray-700">
-                    {data.orders}
-                  </td>
-                  <td className="px-4 py-3 text-right text-gray-700">
-                    {data.newUsers}
-                  </td>
-                  <td className="px-4 py-3 text-right text-gray-700">
-                    {data.conversionRate}%
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-            <tfoot className="bg-gray-50 font-bold">
-              <tr>
-                <td className="px-4 py-3 text-gray-800">Total</td>
-                <td className="px-4 py-3 text-right text-gray-900">
-                  ₦{totalRevenue.toLocaleString()}
-                </td>
-                <td className="px-4 py-3 text-right text-gray-900">
-                  {totalOrders}
-                </td>
-                <td className="px-4 py-3 text-right text-gray-900">
-                  {totalUsers}
-                </td>
-                <td className="px-4 py-3 text-right text-gray-900">
-                  {avgConversion}%
-                </td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
-      </div>
+        .hero-sub {
+          font-size: 15px;
+          color: rgba(255, 255, 255, 0.55);
+          margin: 0 0 24px 0;
+          max-width: 480px;
+          line-height: 1.6;
+        }
+
+        .hero-actions {
+          display: flex;
+          gap: 12px;
+        }
+
+        .hero-btn-primary {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 12px 24px;
+          background: #22c55e;
+          border: none;
+          border-radius: 10px;
+          font-size: 13px;
+          font-weight: 600;
+          color: #000;
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .hero-btn-primary:hover {
+          background: #16a34a;
+          transform: translateY(-2px);
+        }
+
+        .hero-btn-ghost {
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          padding: 12px 24px;
+          background: transparent;
+          border: 1px solid rgba(255, 255, 255, 0.15);
+          border-radius: 10px;
+          font-size: 13px;
+          font-weight: 600;
+          color: rgba(255, 255, 255, 0.8);
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .hero-btn-ghost:hover {
+          border-color: rgba(34, 197, 94, 0.5);
+          color: #22c55e;
+        }
+
+        .hero-right {
+          position: relative;
+          width: 320px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: linear-gradient(135deg, rgba(34, 197, 94, 0.08) 0%, transparent 60%);
+          overflow: hidden;
+        }
+
+        .hero-right::after {
+          content: '';
+          position: absolute;
+          bottom: 10px;
+          left: 10%;
+          right: 10%;
+          height: 40px;
+          background: radial-gradient(ellipse 80% 100% at 50% 100%, rgba(34, 197, 94, 0.3) 0%, transparent 70%);
+          pointer-events: none;
+          filter: blur(8px);
+        }
+
+        .hero-img {
+          width: 90%;
+          height: 90%;
+          object-fit: contain;
+          position: relative;
+          z-index: 1;
+          filter: drop-shadow(0 8px 32px rgba(34, 197, 94, 0.25));
+          transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .hero-right:hover .hero-img {
+          transform: translateY(-12px) scale(1.05);
+          filter: drop-shadow(0 20px 50px rgba(34, 197, 94, 0.45));
+        }
+
+        /* Filter Bar */
+        .filter-bar {
+          display: flex;
+          gap: 12px;
+          margin-bottom: 20px;
+        }
+
+        .filter-select {
+          padding: 12px 16px;
+          background: #161d16;
+          border: 1px solid rgba(34, 197, 94, 0.2);
+          border-radius: 10px;
+          color: rgba(255, 255, 255, 0.7);
+          font-size: 13px;
+          cursor: pointer;
+          outline: none;
+          transition: border-color 0.2s;
+        }
+
+        .filter-select:focus {
+          border-color: rgba(34, 197, 94, 0.5);
+        }
+
+        .refresh-btn {
+          width: 44px;
+          height: 44px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: #161d16;
+          border: 1px solid rgba(34, 197, 94, 0.2);
+          border-radius: 10px;
+          color: rgba(255, 255, 255, 0.7);
+          cursor: pointer;
+          transition: all 0.2s;
+        }
+
+        .refresh-btn:hover {
+          border-color: rgba(34, 197, 94, 0.5);
+          color: #22c55e;
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 12px;
+          margin-bottom: 22px;
+        }
+
+        .stat-tile {
+          background: linear-gradient(160deg, #161d16 0%, #0f140f 70%, #0d120d 100%);
+          border: 1px solid rgba(34, 197, 94, 0.18);
+          border-radius: 16px;
+          padding: 18px 20px 16px;
+          display: flex;
+          flex-direction: column;
+          cursor: pointer;
+          position: relative;
+          overflow: hidden;
+          box-shadow: 0 6px 28px rgba(0, 0, 0, 0.5);
+          transition: box-shadow 0.3s, border-color 0.3s, transform 0.3s cubic-bezier(0.34, 1.4, 0.64, 1);
+        }
+
+        .stat-tile::after {
+          content: '';
+          position: absolute;
+          bottom: -20px;
+          right: -20px;
+          width: 100px;
+          height: 100px;
+          background: radial-gradient(circle, rgba(34, 197, 94, 0.08) 0%, transparent 70%);
+          pointer-events: none;
+        }
+
+        .stat-tile:hover {
+          transform: translateY(-4px) scale(1.015);
+          border-color: rgba(34, 197, 94, 0.35);
+          box-shadow: 0 0 40px rgba(34, 197, 94, 0.1), 0 14px 40px rgba(0, 0, 0, 0.6);
+        }
+
+        .stat-top-row {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 10px;
+        }
+
+        .stat-number-row {
+          display: flex;
+          align-items: baseline;
+          gap: 2px;
+        }
+
+        .stat-prefix {
+          font-size: 14px;
+          color: rgba(255, 255, 255, 0.5);
+        }
+
+        .stat-val {
+          font-size: 26px;
+          font-weight: 700;
+          color: #fff;
+        }
+
+        .stat-suffix {
+          font-size: 14px;
+          color: rgba(255, 255, 255, 0.5);
+          margin-left: 2px;
+        }
+
+        .stat-trend {
+          display: flex;
+          align-items: center;
+          gap: 3px;
+          font-size: 11px;
+          font-weight: 600;
+          padding: 4px 8px;
+          border-radius: 6px;
+        }
+
+        .stat-trend.trend-up {
+          color: #22c55e;
+          background: rgba(34, 197, 94, 0.12);
+        }
+
+        .stat-trend.trend-down {
+          color: #ef4444;
+          background: rgba(239, 68, 68, 0.12);
+        }
+
+        .stat-label {
+          font-size: 13px;
+          font-weight: 600;
+          color: rgba(255, 255, 255, 0.7);
+          margin-bottom: 4px;
+        }
+
+        .stat-sub {
+          font-size: 11px;
+          color: rgba(255, 255, 255, 0.4);
+          margin-bottom: 12px;
+        }
+
+        .stat-bar-track {
+          width: 100%;
+          height: 4px;
+          background: rgba(255, 255, 255, 0.08);
+          border-radius: 2px;
+          overflow: hidden;
+        }
+
+        .stat-bar-fill {
+          height: 100%;
+          background: linear-gradient(90deg, #22c55e, #16a34a);
+          border-radius: 2px;
+          width: var(--bar-w);
+          transition: width 0.6s ease-out;
+        }
+
+        /* Charts Row */
+        .charts-row {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          gap: 16px;
+        }
+
+        .chart-card {
+          background: linear-gradient(160deg, #161d16 0%, #0f140f 70%, #0d120d 100%);
+          border: 1px solid rgba(34, 197, 94, 0.18);
+          border-radius: 16px;
+          overflow: hidden;
+          box-shadow: 0 6px 28px rgba(0, 0, 0, 0.5);
+        }
+
+        .chart-header {
+          padding: 20px 20px 0 20px;
+          margin-bottom: 16px;
+        }
+
+        .chart-title-wrap {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-bottom: 4px;
+        }
+
+        .chart-title {
+          font-size: 15px;
+          font-weight: 600;
+          color: #fff;
+          margin: 0;
+        }
+
+        .chart-sub {
+          font-size: 12px;
+          color: rgba(255, 255, 255, 0.4);
+        }
+
+        .chart-body {
+          padding: 0 20px 20px 20px;
+        }
+
+        /* Bar Chart */
+        .bar-chart {
+          display: flex;
+          align-items: flex-end;
+          justify-content: space-between;
+          height: 180px;
+          gap: 8px;
+        }
+
+        .bar-item {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          height: 100%;
+        }
+
+        .bar-wrapper {
+          flex: 1;
+          width: 100%;
+          display: flex;
+          align-items: flex-end;
+          position: relative;
+        }
+
+        .bar-fill {
+          width: 100%;
+          background: linear-gradient(180deg, #22c55e 0%, #16a34a 100%);
+          border-radius: 6px 6px 0 0;
+          min-height: 8px;
+          transition: height 0.6s ease-out;
+        }
+
+        .bar-fill:hover {
+          background: linear-gradient(180deg, #4ade80 0%, #22c55e 100%);
+        }
+
+        .bar-tooltip {
+          position: absolute;
+          bottom: 100%;
+          left: 50%;
+          transform: translateX(-50%);
+          background: #1a1a1a;
+          border: 1px solid rgba(34, 197, 94, 0.3);
+          padding: 6px 10px;
+          border-radius: 6px;
+          font-size: 11px;
+          font-weight: 600;
+          color: #22c55e;
+          white-space: nowrap;
+          opacity: 0;
+          pointer-events: none;
+          transition: opacity 0.2s;
+          margin-bottom: 8px;
+        }
+
+        .bar-wrapper:hover .bar-tooltip {
+          opacity: 1;
+        }
+
+        .bar-label {
+          font-size: 11px;
+          color: rgba(255, 255, 255, 0.5);
+          margin-top: 8px;
+        }
+
+        /* Rank List */
+        .rank-list {
+          display: flex;
+          flex-direction: column;
+          gap: 12px;
+        }
+
+        .rank-item {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 12px;
+          background: rgba(255, 255, 255, 0.03);
+          border-radius: 10px;
+          transition: background 0.2s;
+        }
+
+        .rank-item:hover {
+          background: rgba(255, 255, 255, 0.06);
+        }
+
+        .rank-num {
+          width: 28px;
+          height: 28px;
+          background: rgba(34, 197, 94, 0.12);
+          border: 1px solid rgba(34, 197, 94, 0.25);
+          border-radius: 8px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 12px;
+          font-weight: 700;
+          color: #22c55e;
+        }
+
+        .rank-info {
+          flex: 1;
+        }
+
+        .rank-name {
+          font-size: 13px;
+          font-weight: 600;
+          color: #fff;
+          margin-bottom: 2px;
+        }
+
+        .rank-revenue {
+          font-size: 12px;
+          color: #22c55e;
+          font-weight: 600;
+        }
+
+        .rank-meta {
+          font-size: 11px;
+          color: rgba(255, 255, 255, 0.4);
+        }
+
+        .rank-growth {
+          font-size: 12px;
+          font-weight: 700;
+          padding: 4px 8px;
+          border-radius: 6px;
+        }
+
+        .rank-growth.positive {
+          color: #22c55e;
+          background: rgba(34, 197, 94, 0.12);
+        }
+
+        .rank-growth.negative {
+          color: #ef4444;
+          background: rgba(239, 68, 68, 0.12);
+        }
+
+        .rank-rating {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          font-size: 12px;
+          font-weight: 600;
+          color: #f59e0b;
+        }
+
+        /* Loading */
+        .loading-container {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 80px 0;
+        }
+
+        .loading-spinner {
+          width: 48px;
+          height: 48px;
+          border: 3px solid rgba(34, 197, 94, 0.2);
+          border-top-color: #22c55e;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
+
+        .loading-text {
+          color: rgba(255, 255, 255, 0.5);
+          font-size: 14px;
+          margin-top: 16px;
+        }
+
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .fade-up {
+          opacity: 0;
+          animation: fadeUp 0.45s ease-out forwards;
+        }
+
+        /* Toast */
+        .toast-container {
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          z-index: 9999;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+
+        .toast {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 14px 18px;
+          background: #161d16;
+          border: 1px solid rgba(34, 197, 94, 0.25);
+          border-radius: 12px;
+          box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+          min-width: 280px;
+        }
+
+        .toast-in {
+          animation: slideIn 0.3s ease-out forwards;
+        }
+
+        .toast-out {
+          animation: slideOut 0.3s ease-out forwards;
+        }
+
+        .toast-title {
+          font-size: 13px;
+          font-weight: 600;
+          color: #fff;
+        }
+
+        .toast-sub {
+          font-size: 11px;
+          color: rgba(255, 255, 255, 0.5);
+        }
+
+        @keyframes slideIn {
+          from {
+            opacity: 0;
+            transform: translateX(100px);
+          }
+          to {
+            opacity: 1;
+            transform: translateX(0);
+          }
+        }
+
+        @keyframes slideOut {
+          from {
+            opacity: 1;
+            transform: translateX(0);
+          }
+          to {
+            opacity: 0;
+            transform: translateX(100px);
+          }
+        }
+
+        /* Naira */
+        .naira {
+          font-family: system-ui, -apple-system, sans-serif;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+          .stats-bar {
+            grid-template-columns: repeat(2, 1fr);
+          }
+
+          .charts-row {
+            grid-template-columns: 1fr;
+          }
+        }
+
+        @media (max-width: 768px) {
+          .hero-card {
+            height: auto;
+            flex-direction: column;
+          }
+
+          .hero-right {
+            width: 100%;
+            height: 160px;
+          }
+
+          .hero-title {
+            font-size: 24px;
+          }
+
+          .stats-bar {
+            grid-template-columns: 1fr;
+          }
+
+          .filter-bar {
+            flex-direction: column;
+          }
+        }
+      `}</style>
     </div>
   );
 }

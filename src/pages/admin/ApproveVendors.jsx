@@ -1,10 +1,28 @@
 import { useEffect, useState, useRef, useCallback } from "react";
 import {
-  X, MagnifyingGlass, CaretDown, CheckCircle, XCircle,
-  Warning, Storefront, Clock, SealCheck, Checks, Trash,
-  MapPin, Phone, EnvelopeSimple, IdentificationCard,
-  Buildings, ChartLineUp, Package, Star, Globe,
-  InstagramLogo, ShieldCheck, ShieldSlash,
+  X,
+  MagnifyingGlass,
+  CaretDown,
+  CheckCircle,
+  XCircle,
+  Warning,
+  Storefront,
+  Clock,
+  SealCheck,
+  Checks,
+  Trash,
+  MapPin,
+  Phone,
+  EnvelopeSimple,
+  IdentificationCard,
+  Buildings,
+  ChartLineUp,
+  Package,
+  Star,
+  Globe,
+  InstagramLogo,
+  ShieldCheck,
+  ShieldSlash,
 } from "@phosphor-icons/react";
 
 /* ─────────────────────────────────────────
@@ -14,11 +32,16 @@ function Toast({ toasts }) {
   return (
     <div className="toast-container">
       {toasts.map((t) => (
-        <div key={t.id} className={`toast toast-${t.type} ${t.removing ? "toast-out" : "toast-in"}`}>
+        <div
+          key={t.id}
+          className={`toast toast-${t.type} ${t.removing ? "toast-out" : "toast-in"}`}
+        >
           <div className="toast-icon">
-            {t.type === "approve"
-              ? <CheckCircle size={16} weight="fill" color="#22c55e" />
-              : <XCircle size={16} weight="fill" color="#ef4444" />}
+            {t.type === "approve" ? (
+              <CheckCircle size={16} weight="fill" color="#22c55e" />
+            ) : (
+              <XCircle size={16} weight="fill" color="#ef4444" />
+            )}
           </div>
           <div className="toast-body">
             <div className="toast-title">{t.title}</div>
@@ -45,12 +68,15 @@ function useCountUp(target, duration = 600) {
     const inc = diff / steps;
     let current = from;
     let step = 0;
-    const timer = setInterval(() => {
-      step++;
-      current += inc;
-      setCount(step >= steps ? target : Math.round(current));
-      if (step >= steps) clearInterval(timer);
-    }, Math.max(16, Math.floor(duration / steps)));
+    const timer = setInterval(
+      () => {
+        step++;
+        current += inc;
+        setCount(step >= steps ? target : Math.round(current));
+        if (step >= steps) clearInterval(timer);
+      },
+      Math.max(16, Math.floor(duration / steps)),
+    );
     return () => clearInterval(timer);
   }, [target, duration]);
   return count;
@@ -69,12 +95,11 @@ function HeroCard({ onStartReview }) {
         <div className="hero-badge">
           <ShieldCheck size={11} weight="fill" /> Vendor Verification
         </div>
-        <h1 className="hero-title">
-          Decide Who Gets to Sell on Your Platform
-        </h1>
+        <h1 className="hero-title">Decide Who Gets to Sell on Your Platform</h1>
         <p className="hero-sub">
-          Every vendor that opens a storefront goes through you first. Verify identities,
-          review business credentials, and only approve sellers who meet your standards.
+          Every vendor that opens a storefront goes through you first. Verify
+          identities, review business credentials, and only approve sellers who
+          meet your standards.
         </p>
         <div className="hero-actions">
           <button className="hero-btn-primary" onClick={onStartReview}>
@@ -101,23 +126,63 @@ function HeroCard({ onStartReview }) {
    Stat cards
 ───────────────────────────────────────── */
 function StatCards({ pending, approved, rejected, totalProducts }) {
-  const pendingCount  = useCountUp(pending);
+  const pendingCount = useCountUp(pending);
   const approvedCount = useCountUp(approved);
   const rejectedCount = useCountUp(rejected);
   const productsCount = useCountUp(totalProducts);
-  const total = (pending + approved + rejected) || 1;
+  const total = pending + approved + rejected || 1;
 
   const cards = [
-    { label: "Pending Verification", value: pendingCount,  suffix: "", prefix: "", sub: "Awaiting your review",       bar: Math.round((pending  / total) * 100), trend: `${pending} pending`,                              delay: "60ms"  },
-    { label: "Approved Vendors",     value: approvedCount, suffix: "", prefix: "", sub: "Active on marketplace",       bar: Math.round((approved / total) * 100), trend: approved > 0 ? `+${approved} approved` : "None yet", delay: "120ms" },
-    { label: "Rejected Vendors",     value: rejectedCount, suffix: "", prefix: "", sub: "Did not meet standards",      bar: Math.round((rejected / total) * 100), trend: rejected > 0 ? `${rejected} rejected` : "None yet",  delay: "180ms" },
-    { label: "Listed Products",      value: productsCount, suffix: "", prefix: "", sub: "Across all pending vendors",  bar: 70,                                   trend: "Pending review",                                  delay: "240ms" },
+    {
+      label: "Pending Verification",
+      value: pendingCount,
+      suffix: "",
+      prefix: "",
+      sub: "Awaiting your review",
+      bar: Math.round((pending / total) * 100),
+      trend: `${pending} pending`,
+      delay: "60ms",
+    },
+    {
+      label: "Approved Vendors",
+      value: approvedCount,
+      suffix: "",
+      prefix: "",
+      sub: "Active on marketplace",
+      bar: Math.round((approved / total) * 100),
+      trend: approved > 0 ? `+${approved} approved` : "None yet",
+      delay: "120ms",
+    },
+    {
+      label: "Rejected Vendors",
+      value: rejectedCount,
+      suffix: "",
+      prefix: "",
+      sub: "Did not meet standards",
+      bar: Math.round((rejected / total) * 100),
+      trend: rejected > 0 ? `${rejected} rejected` : "None yet",
+      delay: "180ms",
+    },
+    {
+      label: "Listed Products",
+      value: productsCount,
+      suffix: "",
+      prefix: "",
+      sub: "Across all pending vendors",
+      bar: 70,
+      trend: "Pending review",
+      delay: "240ms",
+    },
   ];
 
   return (
     <div className="stats-bar">
       {cards.map((c, i) => (
-        <div key={i} className="stat-tile fade-up" style={{ animationDelay: c.delay }}>
+        <div
+          key={i}
+          className="stat-tile fade-up"
+          style={{ animationDelay: c.delay }}
+        >
           <div className="stat-top-row">
             <div className="stat-number-row">
               <span className="stat-prefix">{c.prefix}</span>
@@ -129,7 +194,10 @@ function StatCards({ pending, approved, rejected, totalProducts }) {
           <div className="stat-label">{c.label}</div>
           <div className="stat-sub">{c.sub}</div>
           <div className="stat-bar-track">
-            <div className="stat-bar-fill" style={{ "--bar-w": `${Math.max(c.bar, 2)}%` }} />
+            <div
+              className="stat-bar-fill"
+              style={{ "--bar-w": `${Math.max(c.bar, 2)}%` }}
+            />
           </div>
         </div>
       ))}
@@ -140,8 +208,21 @@ function StatCards({ pending, approved, rejected, totalProducts }) {
 /* ─────────────────────────────────────────
    Vendor card
 ───────────────────────────────────────── */
-function VendorCard({ vendor, onApproveConfirm, onView, onRejectConfirm, selected, onSelect, index }) {
-  const initials = vendor.storeName.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+function VendorCard({
+  vendor,
+  onApproveConfirm,
+  onView,
+  onRejectConfirm,
+  selected,
+  onSelect,
+  index,
+}) {
+  const initials = vendor.storeName
+    .split(" ")
+    .map((w) => w[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
   return (
     <div
@@ -149,8 +230,16 @@ function VendorCard({ vendor, onApproveConfirm, onView, onRejectConfirm, selecte
       style={{ animationDelay: `${index * 55}ms` }}
     >
       {/* checkbox */}
-      <div className="vendor-checkbox-wrap" onClick={(e) => { e.stopPropagation(); onSelect(vendor.id); }}>
-        <div className={`vendor-checkbox ${selected ? "vendor-checkbox-on" : ""}`}>
+      <div
+        className="vendor-checkbox-wrap"
+        onClick={(e) => {
+          e.stopPropagation();
+          onSelect(vendor.id);
+        }}
+      >
+        <div
+          className={`vendor-checkbox ${selected ? "vendor-checkbox-on" : ""}`}
+        >
           {selected && <CheckCircle size={12} weight="fill" color="#000" />}
         </div>
       </div>
@@ -158,7 +247,9 @@ function VendorCard({ vendor, onApproveConfirm, onView, onRejectConfirm, selecte
       {/* card header strip */}
       <div className="vendor-header">
         <div className="vendor-header-overlay" />
-        <span className="vendor-pending-badge"><Clock size={10} weight="fill" /> Pending</span>
+        <span className="vendor-pending-badge">
+          <Clock size={10} weight="fill" /> Pending
+        </span>
         <span className="vendor-category-badge">{vendor.category}</span>
       </div>
 
@@ -182,7 +273,11 @@ function VendorCard({ vendor, onApproveConfirm, onView, onRejectConfirm, selecte
         {/* contact row */}
         <div className="vendor-contact-row">
           <div className="vendor-contact-item">
-            <EnvelopeSimple size={11} color="rgba(255,255,255,0.3)" weight="fill" />
+            <EnvelopeSimple
+              size={11}
+              color="rgba(255,255,255,0.3)"
+              weight="fill"
+            />
             <span>{vendor.email}</span>
           </div>
           <div className="vendor-contact-item">
@@ -194,7 +289,11 @@ function VendorCard({ vendor, onApproveConfirm, onView, onRejectConfirm, selecte
         {/* info pills */}
         <div className="vendor-info-row">
           <div className="vendor-info-pill">
-            <IdentificationCard size={11} color="rgba(34,197,94,0.6)" weight="fill" />
+            <IdentificationCard
+              size={11}
+              color="rgba(34,197,94,0.6)"
+              weight="fill"
+            />
             <span>{vendor.idType}</span>
           </div>
           <div className="vendor-info-pill">
@@ -209,14 +308,34 @@ function VendorCard({ vendor, onApproveConfirm, onView, onRejectConfirm, selecte
 
         {/* submitted */}
         <div className="vendor-submitted">
-          Applied {new Date(vendor.submittedAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+          Applied{" "}
+          {new Date(vendor.submittedAt).toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          })}
         </div>
 
         {/* actions */}
         <div className="vendor-actions">
-          <button className="vendor-btn vendor-btn-view"    onClick={() => onView(vendor)}><MagnifyingGlass size={12} weight="bold" /> View</button>
-          <button className="vendor-btn vendor-btn-approve" onClick={() => onApproveConfirm(vendor)}><SealCheck size={12} weight="bold" /> Approve</button>
-          <button className="vendor-btn vendor-btn-reject"  onClick={() => onRejectConfirm(vendor)}><X size={12} weight="bold" /> Reject</button>
+          <button
+            className="vendor-btn vendor-btn-view"
+            onClick={() => onView(vendor)}
+          >
+            <MagnifyingGlass size={12} weight="bold" /> View
+          </button>
+          <button
+            className="vendor-btn vendor-btn-approve"
+            onClick={() => onApproveConfirm(vendor)}
+          >
+            <SealCheck size={12} weight="bold" /> Approve
+          </button>
+          <button
+            className="vendor-btn vendor-btn-reject"
+            onClick={() => onRejectConfirm(vendor)}
+          >
+            <X size={12} weight="bold" /> Reject
+          </button>
         </div>
       </div>
     </div>
@@ -226,12 +345,19 @@ function VendorCard({ vendor, onApproveConfirm, onView, onRejectConfirm, selecte
 /* ─────────────────────────────────────────
    Vendor modal
 ───────────────────────────────────────── */
-function VendorModal({ vendor, onClose, onApprove, onReject, startOnConfirm, startOnApproveConfirm }) {
-  const [confirmReject,  setConfirmReject]  = useState(false);
+function VendorModal({
+  vendor,
+  onClose,
+  onApprove,
+  onReject,
+  startOnConfirm,
+  startOnApproveConfirm,
+}) {
+  const [confirmReject, setConfirmReject] = useState(false);
   const [confirmApprove, setConfirmApprove] = useState(false);
-  const [rejectReason,   setRejectReason]   = useState("");
-  const [submitting,     setSubmitting]     = useState(false);
-  const [activeTab,      setActiveTab]      = useState("details");
+  const [rejectReason, setRejectReason] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [activeTab, setActiveTab] = useState("details");
 
   useEffect(() => {
     setConfirmReject(!!startOnConfirm);
@@ -243,18 +369,29 @@ function VendorModal({ vendor, onClose, onApprove, onReject, startOnConfirm, sta
 
   if (!vendor) return null;
 
-  const initials = vendor.storeName.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+  const initials = vendor.storeName
+    .split(" ")
+    .map((w) => w[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
   const handleApprove = () => {
     if (submitting) return;
     setSubmitting(true);
-    setTimeout(() => { onApprove(vendor.id); onClose(); }, 200);
+    setTimeout(() => {
+      onApprove(vendor.id);
+      onClose();
+    }, 200);
   };
 
   const handleReject = () => {
     if (submitting) return;
     setSubmitting(true);
-    setTimeout(() => { onReject(vendor.id, rejectReason); onClose(); }, 200);
+    setTimeout(() => {
+      onReject(vendor.id, rejectReason);
+      onClose();
+    }, 200);
   };
 
   const hideMain = confirmReject || confirmApprove;
@@ -262,13 +399,16 @@ function VendorModal({ vendor, onClose, onApprove, onReject, startOnConfirm, sta
   return (
     <div className="modal-overlay" onClick={onClose}>
       <div className="modal-box" onClick={(e) => e.stopPropagation()}>
-
         {/* hero strip */}
         <div className="modal-hero">
           <div className="modal-hero-pattern" />
           <div className="modal-hero-overlay" />
-          <button className="modal-close-float" onClick={onClose}><X size={14} weight="bold" /></button>
-          <span className="modal-hero-badge"><Clock size={10} weight="fill" /> Pending Verification</span>
+          <button className="modal-close-float" onClick={onClose}>
+            <X size={14} weight="bold" />
+          </button>
+          <span className="modal-hero-badge">
+            <Clock size={10} weight="fill" /> Pending Verification
+          </span>
 
           {/* avatar centred */}
           <div className="modal-avatar-wrap">
@@ -289,8 +429,18 @@ function VendorModal({ vendor, onClose, onApprove, onReject, startOnConfirm, sta
             <>
               {/* tabs */}
               <div className="modal-tabs">
-                <button className={`modal-tab ${activeTab === "details" ? "modal-tab-active" : ""}`} onClick={() => setActiveTab("details")}>Business Details</button>
-                <button className={`modal-tab ${activeTab === "documents" ? "modal-tab-active" : ""}`} onClick={() => setActiveTab("documents")}>Documents & ID</button>
+                <button
+                  className={`modal-tab ${activeTab === "details" ? "modal-tab-active" : ""}`}
+                  onClick={() => setActiveTab("details")}
+                >
+                  Business Details
+                </button>
+                <button
+                  className={`modal-tab ${activeTab === "documents" ? "modal-tab-active" : ""}`}
+                  onClick={() => setActiveTab("documents")}
+                >
+                  Documents & ID
+                </button>
               </div>
 
               {activeTab === "details" ? (
@@ -299,7 +449,9 @@ function VendorModal({ vendor, onClose, onApprove, onReject, startOnConfirm, sta
                   <div className="modal-info-grid">
                     <div className="modal-info-cell">
                       <div className="modal-field-label">Business Type</div>
-                      <div className="modal-field-val">{vendor.businessType}</div>
+                      <div className="modal-field-val">
+                        {vendor.businessType}
+                      </div>
                     </div>
                     <div className="modal-info-cell">
                       <div className="modal-field-label">Category</div>
@@ -311,41 +463,65 @@ function VendorModal({ vendor, onClose, onApprove, onReject, startOnConfirm, sta
                     </div>
                     <div className="modal-info-cell">
                       <div className="modal-field-label">Products Listed</div>
-                      <div className="modal-field-val">{vendor.productCount}</div>
+                      <div className="modal-field-val">
+                        {vendor.productCount}
+                      </div>
                     </div>
                   </div>
 
                   {/* contact */}
                   <div className="modal-section">
-                    <div className="modal-section-label">Contact Information</div>
+                    <div className="modal-section-label">
+                      Contact Information
+                    </div>
                     <div className="modal-contact-list">
                       <div className="modal-contact-item">
-                        <div className="modal-contact-icon"><EnvelopeSimple size={13} color="#22c55e" weight="fill" /></div>
+                        <div className="modal-contact-icon">
+                          <EnvelopeSimple
+                            size={13}
+                            color="#22c55e"
+                            weight="fill"
+                          />
+                        </div>
                         <div>
                           <div className="modal-contact-label">Email</div>
-                          <div className="modal-contact-val">{vendor.email}</div>
+                          <div className="modal-contact-val">
+                            {vendor.email}
+                          </div>
                         </div>
                       </div>
                       <div className="modal-contact-item">
-                        <div className="modal-contact-icon"><Phone size={13} color="#22c55e" weight="fill" /></div>
+                        <div className="modal-contact-icon">
+                          <Phone size={13} color="#22c55e" weight="fill" />
+                        </div>
                         <div>
                           <div className="modal-contact-label">Phone</div>
-                          <div className="modal-contact-val">{vendor.phone}</div>
+                          <div className="modal-contact-val">
+                            {vendor.phone}
+                          </div>
                         </div>
                       </div>
                       <div className="modal-contact-item">
-                        <div className="modal-contact-icon"><MapPin size={13} color="#22c55e" weight="fill" /></div>
+                        <div className="modal-contact-icon">
+                          <MapPin size={13} color="#22c55e" weight="fill" />
+                        </div>
                         <div>
                           <div className="modal-contact-label">Location</div>
-                          <div className="modal-contact-val">{vendor.location}</div>
+                          <div className="modal-contact-val">
+                            {vendor.location}
+                          </div>
                         </div>
                       </div>
                       {vendor.website && (
                         <div className="modal-contact-item">
-                          <div className="modal-contact-icon"><Globe size={13} color="#22c55e" weight="fill" /></div>
+                          <div className="modal-contact-icon">
+                            <Globe size={13} color="#22c55e" weight="fill" />
+                          </div>
                           <div>
                             <div className="modal-contact-label">Website</div>
-                            <div className="modal-contact-val">{vendor.website}</div>
+                            <div className="modal-contact-val">
+                              {vendor.website}
+                            </div>
                           </div>
                         </div>
                       )}
@@ -361,19 +537,35 @@ function VendorModal({ vendor, onClose, onApprove, onReject, startOnConfirm, sta
               ) : (
                 <>
                   <div className="modal-section">
-                    <div className="modal-section-label">Submitted Documents</div>
+                    <div className="modal-section-label">
+                      Submitted Documents
+                    </div>
                     <div className="modal-docs-list">
                       {vendor.documents.map((doc, i) => (
                         <div key={i} className="modal-doc-item">
                           <div className="modal-doc-icon">
-                            <IdentificationCard size={14} color="#22c55e" weight="fill" />
+                            <IdentificationCard
+                              size={14}
+                              color="#22c55e"
+                              weight="fill"
+                            />
                           </div>
                           <div className="modal-doc-info">
                             <div className="modal-doc-name">{doc.name}</div>
                             <div className="modal-doc-status">{doc.status}</div>
                           </div>
-                          <div className={`modal-doc-badge modal-doc-badge-${doc.verified ? "ok" : "pending"}`}>
-                            {doc.verified ? <><CheckCircle size={10} weight="fill" /> Verified</> : <><Clock size={10} weight="fill" /> Pending</>}
+                          <div
+                            className={`modal-doc-badge modal-doc-badge-${doc.verified ? "ok" : "pending"}`}
+                          >
+                            {doc.verified ? (
+                              <>
+                                <CheckCircle size={10} weight="fill" /> Verified
+                              </>
+                            ) : (
+                              <>
+                                <Clock size={10} weight="fill" /> Pending
+                              </>
+                            )}
                           </div>
                         </div>
                       ))}
@@ -382,11 +574,24 @@ function VendorModal({ vendor, onClose, onApprove, onReject, startOnConfirm, sta
 
                   <div className="modal-section">
                     <div className="modal-section-label">ID Type</div>
-                    <div className="modal-field-val" style={{ fontSize: 13 }}>{vendor.idType}</div>
+                    <div className="modal-field-val" style={{ fontSize: 13 }}>
+                      {vendor.idType}
+                    </div>
                   </div>
                   <div className="modal-section">
-                    <div className="modal-section-label">RC / Registration Number</div>
-                    <div className="modal-field-val" style={{ fontSize: 13, fontFamily: "monospace", letterSpacing: "1px" }}>{vendor.regNumber}</div>
+                    <div className="modal-section-label">
+                      RC / Registration Number
+                    </div>
+                    <div
+                      className="modal-field-val"
+                      style={{
+                        fontSize: 13,
+                        fontFamily: "monospace",
+                        letterSpacing: "1px",
+                      }}
+                    >
+                      {vendor.regNumber}
+                    </div>
                   </div>
                 </>
               )}
@@ -401,16 +606,28 @@ function VendorModal({ vendor, onClose, onApprove, onReject, startOnConfirm, sta
               </div>
               <div className="modal-confirm-title">Approve this vendor?</div>
               <div className="modal-confirm-sub">
-                <strong>{vendor.storeName}</strong> owned by <strong>{vendor.ownerName}</strong> will be activated and can start listing products immediately.
+                <strong>{vendor.storeName}</strong> owned by{" "}
+                <strong>{vendor.ownerName}</strong> will be activated and can
+                start listing products immediately.
               </div>
               <div className="modal-confirm-btns">
-                <button className="modal-btn modal-btn-ghost" onClick={() => setConfirmApprove(false)} disabled={submitting}>Cancel</button>
-                <button className="modal-btn modal-btn-approve-confirm" onClick={handleApprove} disabled={submitting}>
-                  <CheckCircle size={15} weight="bold" /> {submitting ? "Approving…" : "Yes, Approve"}
+                <button
+                  className="modal-btn modal-btn-ghost"
+                  onClick={() => setConfirmApprove(false)}
+                  disabled={submitting}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="modal-btn modal-btn-approve-confirm"
+                  onClick={handleApprove}
+                  disabled={submitting}
+                >
+                  <CheckCircle size={15} weight="bold" />{" "}
+                  {submitting ? "Approving…" : "Yes, Approve"}
                 </button>
               </div>
             </div>
-
           ) : confirmReject ? (
             <div className="modal-confirm-wrap">
               <div className="modal-confirm-icon">
@@ -418,11 +635,19 @@ function VendorModal({ vendor, onClose, onApprove, onReject, startOnConfirm, sta
               </div>
               <div className="modal-confirm-title">Reject this vendor?</div>
               <div className="modal-confirm-sub">
-                <strong>{vendor.ownerName}</strong>'s application for <strong>{vendor.storeName}</strong> will be declined and they'll be notified.
+                <strong>{vendor.ownerName}</strong>'s application for{" "}
+                <strong>{vendor.storeName}</strong> will be declined and they'll
+                be notified.
               </div>
               <div className="reject-reason-wrap">
-                <div className="modal-field-label" style={{ marginBottom: 6, textAlign: "left", width: "100%" }}>
-                  Reason for rejection <span style={{ color: "rgba(255,255,255,0.2)" }}>(optional)</span>
+                <div
+                  className="modal-field-label"
+                  style={{ marginBottom: 6, textAlign: "left", width: "100%" }}
+                >
+                  Reason for rejection{" "}
+                  <span style={{ color: "rgba(255,255,255,0.2)" }}>
+                    (optional)
+                  </span>
                 </div>
                 <textarea
                   className="reject-reason-input"
@@ -433,19 +658,35 @@ function VendorModal({ vendor, onClose, onApprove, onReject, startOnConfirm, sta
                 />
               </div>
               <div className="modal-confirm-btns">
-                <button className="modal-btn modal-btn-ghost" onClick={() => setConfirmReject(false)} disabled={submitting}>Cancel</button>
-                <button className="modal-btn modal-btn-reject-confirm" onClick={handleReject} disabled={submitting}>
-                  <X size={15} weight="bold" /> {submitting ? "Rejecting…" : "Yes, Reject"}
+                <button
+                  className="modal-btn modal-btn-ghost"
+                  onClick={() => setConfirmReject(false)}
+                  disabled={submitting}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="modal-btn modal-btn-reject-confirm"
+                  onClick={handleReject}
+                  disabled={submitting}
+                >
+                  <X size={15} weight="bold" />{" "}
+                  {submitting ? "Rejecting…" : "Yes, Reject"}
                 </button>
               </div>
             </div>
-
           ) : (
             <div className="modal-actions">
-              <button className="modal-btn modal-btn-approve" onClick={() => setConfirmApprove(true)}>
+              <button
+                className="modal-btn modal-btn-approve"
+                onClick={() => setConfirmApprove(true)}
+              >
                 <ShieldCheck size={16} weight="bold" /> Approve Vendor
               </button>
-              <button className="modal-btn modal-btn-reject" onClick={() => setConfirmReject(true)}>
+              <button
+                className="modal-btn modal-btn-reject"
+                onClick={() => setConfirmReject(true)}
+              >
                 <ShieldSlash size={16} weight="bold" /> Reject Vendor
               </button>
             </div>
@@ -463,11 +704,19 @@ function BulkBar({ count, onApproveAll, onRejectAll, onClear }) {
   if (count === 0) return null;
   return (
     <div className="bulk-bar fade-up">
-      <span className="bulk-count">{count} vendor{count > 1 ? "s" : ""} selected</span>
+      <span className="bulk-count">
+        {count} vendor{count > 1 ? "s" : ""} selected
+      </span>
       <div className="bulk-actions">
-        <button className="bulk-btn bulk-btn-approve" onClick={onApproveAll}><Checks size={14} weight="bold" /> Approve All</button>
-        <button className="bulk-btn bulk-btn-reject"  onClick={onRejectAll}><Trash  size={14} weight="bold" /> Reject All</button>
-        <button className="bulk-btn bulk-btn-clear"   onClick={onClear}><X size={13} weight="bold" /> Clear</button>
+        <button className="bulk-btn bulk-btn-approve" onClick={onApproveAll}>
+          <Checks size={14} weight="bold" /> Approve All
+        </button>
+        <button className="bulk-btn bulk-btn-reject" onClick={onRejectAll}>
+          <Trash size={14} weight="bold" /> Reject All
+        </button>
+        <button className="bulk-btn bulk-btn-clear" onClick={onClear}>
+          <X size={13} weight="bold" /> Clear
+        </button>
       </div>
     </div>
   );
@@ -485,9 +734,18 @@ function QueueComplete({ approved, rejected }) {
       <div className="qc-title">All vendors reviewed!</div>
       <div className="qc-sub">
         You've processed every vendor application in the queue.{" "}
-        {approved > 0 && <span><strong style={{ color: "#22c55e" }}>{approved} approved</strong>{rejected > 0 ? " and " : "."}</span>}
-        {rejected > 0 && <span><strong style={{ color: "#ef4444" }}>{rejected} rejected</strong>.</span>}
-        {" "}New vendor applications will appear here.
+        {approved > 0 && (
+          <span>
+            <strong style={{ color: "#22c55e" }}>{approved} approved</strong>
+            {rejected > 0 ? " and " : "."}
+          </span>
+        )}
+        {rejected > 0 && (
+          <span>
+            <strong style={{ color: "#ef4444" }}>{rejected} rejected</strong>.
+          </span>
+        )}{" "}
+        New vendor applications will appear here.
       </div>
     </div>
   );
@@ -497,112 +755,404 @@ function QueueComplete({ approved, rejected }) {
    Mock data
 ───────────────────────────────────────── */
 const INITIAL_VENDORS = [
-  { id: 1,  storeName: "Sneaker Palace NG",   ownerName: "Chukwuemeka Obi",    email: "emeka@sneakerpalace.ng",   phone: "+234 803 456 7890", location: "Lagos, Nigeria",    category: "Footwear",    businessType: "Sole Proprietor", experience: "3-5 years", productCount: 48, regNumber: "BN-2019-0087643", idType: "CAC Certificate", submittedAt: "2024-02-01", about: "Premium sneaker retailer specialising in authentic Nike, Adidas, and New Balance. We source directly from authorised distributors.", documents: [{ name: "CAC Certificate", status: "Business Registration", verified: true }, { name: "NIN Slip", status: "National ID", verified: true }, { name: "Utility Bill", status: "Proof of Address", verified: false }] },
-  { id: 2,  storeName: "Fashion Hub Lagos",    ownerName: "Adaeze Nwosu",       email: "ada@fashionhub.ng",        phone: "+234 807 123 4567", location: "Abuja, Nigeria",    category: "Clothing",    businessType: "LLC",             experience: "5+ years",  productCount: 124, regNumber: "RC-2017-0054321", idType: "Driver's Licence", submittedAt: "2024-01-28", about: "Curated fashion brand offering contemporary African and international styles for men and women. Established 2017.", documents: [{ name: "CAC Certificate", status: "Business Registration", verified: true }, { name: "Driver's Licence", status: "Government ID", verified: true }, { name: "Bank Statement", status: "Financial Verification", verified: true }] },
-  { id: 3,  storeName: "TechGear Africa",      ownerName: "Babatunde Adewale",  email: "tunde@techgear.africa",    phone: "+234 815 987 6543", location: "Port Harcourt, NG", category: "Electronics", businessType: "Partnership",     experience: "2-3 years", productCount: 35, regNumber: "BN-2021-0112983", idType: "Voters Card", submittedAt: "2024-01-25", about: "Your one-stop shop for quality tech accessories, gadgets, and electronics. We offer genuine products with warranties.", documents: [{ name: "CAC Certificate", status: "Business Registration", verified: true }, { name: "Voters Card", status: "Government ID", verified: false }, { name: "Utility Bill", status: "Proof of Address", verified: false }] },
-  { id: 4,  storeName: "Kemi Couture",         ownerName: "Oluwakemi Adeleke",  email: "kemi@kemicouture.com",     phone: "+234 708 234 5678", location: "Lagos, Nigeria",    category: "Fashion",     businessType: "Sole Proprietor", experience: "1-2 years", productCount: 67, regNumber: "BN-2022-0234567", idType: "International Passport", submittedAt: "2024-01-22", about: "Luxury ready-to-wear and bespoke clothing label celebrating Nigerian craftsmanship with a modern aesthetic.", documents: [{ name: "CAC Certificate", status: "Business Registration", verified: true }, { name: "International Passport", status: "Government ID", verified: true }, { name: "Studio Address Proof", status: "Proof of Address", verified: false }] },
-  { id: 5,  storeName: "HomeDecor Naija",      ownerName: "Eze Chibueze",       email: "eze@homedecornaija.com",   phone: "+234 801 345 6789", location: "Enugu, Nigeria",    category: "Home & Decor", businessType: "LLC",            experience: "3-5 years", productCount: 89, regNumber: "RC-2019-0098712", idType: "NIN Slip", submittedAt: "2024-01-20", about: "Premium home décor and furnishings. We bring global trends to Nigerian homes with locally crafted and imported pieces.", documents: [{ name: "CAC Certificate", status: "Business Registration", verified: true }, { name: "NIN Slip", status: "National ID", verified: true }, { name: "Utility Bill", status: "Proof of Address", verified: true }] },
-  { id: 6,  storeName: "Fitness Kingdom",      ownerName: "Rotimi Bankole",     email: "rotimi@fitnesskingdom.ng", phone: "+234 812 456 7890", location: "Lagos, Nigeria",    category: "Sports",      businessType: "Sole Proprietor", experience: "2-3 years", productCount: 42, regNumber: "BN-2021-0178654", idType: "Driver's Licence", submittedAt: "2024-01-18", about: "Sports equipment, gym gear, and fitness accessories. We supply gyms and individual athletes across Nigeria.", documents: [{ name: "CAC Certificate", status: "Business Registration", verified: true }, { name: "Driver's Licence", status: "Government ID", verified: true }, { name: "Store Photos", status: "Physical Presence Proof", verified: false }] },
-  { id: 7,  storeName: "Little Stars Kids",    ownerName: "Ngozi Okafor",       email: "ngozi@littlestars.ng",     phone: "+234 705 678 9012", location: "Ibadan, Nigeria",   category: "Children",    businessType: "Partnership",     experience: "5+ years",  productCount: 156, regNumber: "RC-2016-0043219", idType: "International Passport", submittedAt: "2024-01-15", about: "Everything for children — clothing, toys, educational materials, and nursery furniture. Trusted by thousands of Nigerian families.", documents: [{ name: "CAC Certificate", status: "Business Registration", verified: true }, { name: "International Passport", status: "Government ID", verified: true }, { name: "NAFDAC Compliance", status: "Product Safety Cert", verified: false }] },
-  { id: 8,  storeName: "AutoParts Express",    ownerName: "Emeka Nzewi",        email: "emeka@autopartsxpress.ng", phone: "+234 818 789 0123", location: "Kano, Nigeria",     category: "Automotive",  businessType: "LLC",             experience: "5+ years",  productCount: 203, regNumber: "RC-2015-0032187", idType: "CAC Certificate", submittedAt: "2024-01-12", about: "Genuine and OEM auto parts for all vehicle makes. We stock over 5000 SKUs and offer same-day delivery in major cities.", documents: [{ name: "CAC Certificate", status: "Business Registration", verified: true }, { name: "SON Certification", status: "Standards Compliance", verified: true }, { name: "Warehouse Photos", status: "Physical Presence Proof", verified: true }] },
+  {
+    id: 1,
+    storeName: "Sneaker Palace NG",
+    ownerName: "Chukwuemeka Obi",
+    email: "emeka@sneakerpalace.ng",
+    phone: "+234 803 456 7890",
+    location: "Lagos, Nigeria",
+    category: "Footwear",
+    businessType: "Sole Proprietor",
+    experience: "3-5 years",
+    productCount: 48,
+    regNumber: "BN-2019-0087643",
+    idType: "CAC Certificate",
+    submittedAt: "2024-02-01",
+    about:
+      "Premium sneaker retailer specialising in authentic Nike, Adidas, and New Balance. We source directly from authorised distributors.",
+    documents: [
+      {
+        name: "CAC Certificate",
+        status: "Business Registration",
+        verified: true,
+      },
+      { name: "NIN Slip", status: "National ID", verified: true },
+      { name: "Utility Bill", status: "Proof of Address", verified: false },
+    ],
+  },
+  {
+    id: 2,
+    storeName: "Fashion Hub Lagos",
+    ownerName: "Adaeze Nwosu",
+    email: "ada@fashionhub.ng",
+    phone: "+234 807 123 4567",
+    location: "Abuja, Nigeria",
+    category: "Clothing",
+    businessType: "LLC",
+    experience: "5+ years",
+    productCount: 124,
+    regNumber: "RC-2017-0054321",
+    idType: "Driver's Licence",
+    submittedAt: "2024-01-28",
+    about:
+      "Curated fashion brand offering contemporary African and international styles for men and women. Established 2017.",
+    documents: [
+      {
+        name: "CAC Certificate",
+        status: "Business Registration",
+        verified: true,
+      },
+      { name: "Driver's Licence", status: "Government ID", verified: true },
+      {
+        name: "Bank Statement",
+        status: "Financial Verification",
+        verified: true,
+      },
+    ],
+  },
+  {
+    id: 3,
+    storeName: "TechGear Africa",
+    ownerName: "Babatunde Adewale",
+    email: "tunde@techgear.africa",
+    phone: "+234 815 987 6543",
+    location: "Port Harcourt, NG",
+    category: "Electronics",
+    businessType: "Partnership",
+    experience: "2-3 years",
+    productCount: 35,
+    regNumber: "BN-2021-0112983",
+    idType: "Voters Card",
+    submittedAt: "2024-01-25",
+    about:
+      "Your one-stop shop for quality tech accessories, gadgets, and electronics. We offer genuine products with warranties.",
+    documents: [
+      {
+        name: "CAC Certificate",
+        status: "Business Registration",
+        verified: true,
+      },
+      { name: "Voters Card", status: "Government ID", verified: false },
+      { name: "Utility Bill", status: "Proof of Address", verified: false },
+    ],
+  },
+  {
+    id: 4,
+    storeName: "Kemi Couture",
+    ownerName: "Oluwakemi Adeleke",
+    email: "kemi@kemicouture.com",
+    phone: "+234 708 234 5678",
+    location: "Lagos, Nigeria",
+    category: "Fashion",
+    businessType: "Sole Proprietor",
+    experience: "1-2 years",
+    productCount: 67,
+    regNumber: "BN-2022-0234567",
+    idType: "International Passport",
+    submittedAt: "2024-01-22",
+    about:
+      "Luxury ready-to-wear and bespoke clothing label celebrating Nigerian craftsmanship with a modern aesthetic.",
+    documents: [
+      {
+        name: "CAC Certificate",
+        status: "Business Registration",
+        verified: true,
+      },
+      {
+        name: "International Passport",
+        status: "Government ID",
+        verified: true,
+      },
+      {
+        name: "Studio Address Proof",
+        status: "Proof of Address",
+        verified: false,
+      },
+    ],
+  },
+  {
+    id: 5,
+    storeName: "HomeDecor Naija",
+    ownerName: "Eze Chibueze",
+    email: "eze@homedecornaija.com",
+    phone: "+234 801 345 6789",
+    location: "Enugu, Nigeria",
+    category: "Home & Decor",
+    businessType: "LLC",
+    experience: "3-5 years",
+    productCount: 89,
+    regNumber: "RC-2019-0098712",
+    idType: "NIN Slip",
+    submittedAt: "2024-01-20",
+    about:
+      "Premium home décor and furnishings. We bring global trends to Nigerian homes with locally crafted and imported pieces.",
+    documents: [
+      {
+        name: "CAC Certificate",
+        status: "Business Registration",
+        verified: true,
+      },
+      { name: "NIN Slip", status: "National ID", verified: true },
+      { name: "Utility Bill", status: "Proof of Address", verified: true },
+    ],
+  },
+  {
+    id: 6,
+    storeName: "Fitness Kingdom",
+    ownerName: "Rotimi Bankole",
+    email: "rotimi@fitnesskingdom.ng",
+    phone: "+234 812 456 7890",
+    location: "Lagos, Nigeria",
+    category: "Sports",
+    businessType: "Sole Proprietor",
+    experience: "2-3 years",
+    productCount: 42,
+    regNumber: "BN-2021-0178654",
+    idType: "Driver's Licence",
+    submittedAt: "2024-01-18",
+    about:
+      "Sports equipment, gym gear, and fitness accessories. We supply gyms and individual athletes across Nigeria.",
+    documents: [
+      {
+        name: "CAC Certificate",
+        status: "Business Registration",
+        verified: true,
+      },
+      { name: "Driver's Licence", status: "Government ID", verified: true },
+      {
+        name: "Store Photos",
+        status: "Physical Presence Proof",
+        verified: false,
+      },
+    ],
+  },
+  {
+    id: 7,
+    storeName: "Little Stars Kids",
+    ownerName: "Ngozi Okafor",
+    email: "ngozi@littlestars.ng",
+    phone: "+234 705 678 9012",
+    location: "Ibadan, Nigeria",
+    category: "Children",
+    businessType: "Partnership",
+    experience: "5+ years",
+    productCount: 156,
+    regNumber: "RC-2016-0043219",
+    idType: "International Passport",
+    submittedAt: "2024-01-15",
+    about:
+      "Everything for children — clothing, toys, educational materials, and nursery furniture. Trusted by thousands of Nigerian families.",
+    documents: [
+      {
+        name: "CAC Certificate",
+        status: "Business Registration",
+        verified: true,
+      },
+      {
+        name: "International Passport",
+        status: "Government ID",
+        verified: true,
+      },
+      {
+        name: "NAFDAC Compliance",
+        status: "Product Safety Cert",
+        verified: false,
+      },
+    ],
+  },
+  {
+    id: 8,
+    storeName: "AutoParts Express",
+    ownerName: "Emeka Nzewi",
+    email: "emeka@autopartsxpress.ng",
+    phone: "+234 818 789 0123",
+    location: "Kano, Nigeria",
+    category: "Automotive",
+    businessType: "LLC",
+    experience: "5+ years",
+    productCount: 203,
+    regNumber: "RC-2015-0032187",
+    idType: "CAC Certificate",
+    submittedAt: "2024-01-12",
+    about:
+      "Genuine and OEM auto parts for all vehicle makes. We stock over 5000 SKUs and offer same-day delivery in major cities.",
+    documents: [
+      {
+        name: "CAC Certificate",
+        status: "Business Registration",
+        verified: true,
+      },
+      {
+        name: "SON Certification",
+        status: "Standards Compliance",
+        verified: true,
+      },
+      {
+        name: "Warehouse Photos",
+        status: "Physical Presence Proof",
+        verified: true,
+      },
+    ],
+  },
 ];
 
 /* ─────────────────────────────────────────
    Main page
 ───────────────────────────────────────── */
 export default function ApproveVendors() {
-  const [vendors,        setVendors]        = useState([]);
-  const [loading,        setLoading]        = useState(true);
-  const [approvedCount,  setApprovedCount]  = useState(0);
-  const [rejectedCount,  setRejectedCount]  = useState(0);
+  const [vendors, setVendors] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [approvedCount, setApprovedCount] = useState(0);
+  const [rejectedCount, setRejectedCount] = useState(0);
   const [selectedVendor, setSelectedVendor] = useState(null);
-  const [modalStartConfirm,  setModalStartConfirm]  = useState(false);
-  const [modalStartApprove,  setModalStartApprove]  = useState(false);
-  const [toasts,         setToasts]         = useState([]);
-  const [searchTerm,     setSearchTerm]     = useState("");
+  const [modalStartConfirm, setModalStartConfirm] = useState(false);
+  const [modalStartApprove, setModalStartApprove] = useState(false);
+  const [toasts, setToasts] = useState([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
-  const [selectedIds,    setSelectedIds]    = useState([]);
+  const [selectedIds, setSelectedIds] = useState([]);
   const gridRef = useRef(null);
 
   useEffect(() => {
-    setTimeout(() => { setVendors(INITIAL_VENDORS); setLoading(false); }, 900);
+    setTimeout(() => {
+      setVendors(INITIAL_VENDORS);
+      setLoading(false);
+    }, 900);
   }, []);
 
   const showToast = useCallback((type, title, sub) => {
     const id = Date.now() + Math.random();
     setToasts((p) => [...p, { id, type, title, sub, removing: false }]);
     setTimeout(() => {
-      setToasts((p) => p.map((t) => t.id === id ? { ...t, removing: true } : t));
+      setToasts((p) =>
+        p.map((t) => (t.id === id ? { ...t, removing: true } : t)),
+      );
       setTimeout(() => setToasts((p) => p.filter((t) => t.id !== id)), 400);
     }, 3500);
   }, []);
 
-  const handleApprove = useCallback((id) => {
-    const v = vendors.find((x) => x.id === id);
-    setVendors((prev) => prev.filter((x) => x.id !== id));
-    setSelectedIds((prev) => prev.filter((x) => x !== id));
-    setApprovedCount((c) => c + 1);
-    if (v) showToast("approve", "Vendor Approved!", `${v.storeName} is now active on the marketplace.`);
-  }, [vendors, showToast]);
+  const handleApprove = useCallback(
+    (id) => {
+      const v = vendors.find((x) => x.id === id);
+      setVendors((prev) => prev.filter((x) => x.id !== id));
+      setSelectedIds((prev) => prev.filter((x) => x !== id));
+      setApprovedCount((c) => c + 1);
+      if (v)
+        showToast(
+          "approve",
+          "Vendor Approved!",
+          `${v.storeName} is now active on the marketplace.`,
+        );
+    },
+    [vendors, showToast],
+  );
 
-  const handleReject = useCallback((id) => {
-    const v = vendors.find((x) => x.id === id);
-    setVendors((prev) => prev.filter((x) => x.id !== id));
-    setSelectedIds((prev) => prev.filter((x) => x !== id));
-    setRejectedCount((c) => c + 1);
-    if (v) showToast("reject", "Vendor Rejected", `${v.storeName}'s application has been declined.`);
-  }, [vendors, showToast]);
+  const handleReject = useCallback(
+    (id) => {
+      const v = vendors.find((x) => x.id === id);
+      setVendors((prev) => prev.filter((x) => x.id !== id));
+      setSelectedIds((prev) => prev.filter((x) => x !== id));
+      setRejectedCount((c) => c + 1);
+      if (v)
+        showToast(
+          "reject",
+          "Vendor Rejected",
+          `${v.storeName}'s application has been declined.`,
+        );
+    },
+    [vendors, showToast],
+  );
 
   const handleBulkApprove = () => {
     const ids = [...selectedIds];
-    ids.forEach((id) => { setVendors((prev) => prev.filter((x) => x.id !== id)); setApprovedCount((c) => c + 1); });
+    ids.forEach((id) => {
+      setVendors((prev) => prev.filter((x) => x.id !== id));
+      setApprovedCount((c) => c + 1);
+    });
     setSelectedIds([]);
-    showToast("approve", `${ids.length} Vendors Approved`, "They are now active on the marketplace.");
+    showToast(
+      "approve",
+      `${ids.length} Vendors Approved`,
+      "They are now active on the marketplace.",
+    );
   };
 
   const handleBulkReject = () => {
     const ids = [...selectedIds];
-    ids.forEach((id) => { setVendors((prev) => prev.filter((x) => x.id !== id)); setRejectedCount((c) => c + 1); });
+    ids.forEach((id) => {
+      setVendors((prev) => prev.filter((x) => x.id !== id));
+      setRejectedCount((c) => c + 1);
+    });
     setSelectedIds([]);
-    showToast("reject", `${ids.length} Vendors Rejected`, "Applicants have been notified.");
+    showToast(
+      "reject",
+      `${ids.length} Vendors Rejected`,
+      "Applicants have been notified.",
+    );
   };
 
   const toggleSelect = (id) =>
-    setSelectedIds((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
 
-  const handleCardApprove = (v) => { setModalStartApprove(true);  setModalStartConfirm(false); setSelectedVendor(v); };
-  const handleCardReject  = (v) => { setModalStartConfirm(true);  setModalStartApprove(false); setSelectedVendor(v); };
-  const handleView        = (v) => { setModalStartConfirm(false); setModalStartApprove(false); setSelectedVendor(v); };
-  const handleModalClose  = () => { setSelectedVendor(null); setModalStartConfirm(false); setModalStartApprove(false); };
-  const scrollToGrid = () => gridRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  const handleCardApprove = (v) => {
+    setModalStartApprove(true);
+    setModalStartConfirm(false);
+    setSelectedVendor(v);
+  };
+  const handleCardReject = (v) => {
+    setModalStartConfirm(true);
+    setModalStartApprove(false);
+    setSelectedVendor(v);
+  };
+  const handleView = (v) => {
+    setModalStartConfirm(false);
+    setModalStartApprove(false);
+    setSelectedVendor(v);
+  };
+  const handleModalClose = () => {
+    setSelectedVendor(null);
+    setModalStartConfirm(false);
+    setModalStartApprove(false);
+  };
+  const scrollToGrid = () =>
+    gridRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
 
   const categories = [
-    { value: "all",        label: "All Categories" },
-    { value: "Footwear",   label: "Footwear" },
-    { value: "Clothing",   label: "Clothing" },
-    { value: "Fashion",    label: "Fashion" },
-    { value: "Electronics",label: "Electronics" },
-    { value: "Sports",     label: "Sports" },
-    { value: "Children",   label: "Children" },
+    { value: "all", label: "All Categories" },
+    { value: "Footwear", label: "Footwear" },
+    { value: "Clothing", label: "Clothing" },
+    { value: "Fashion", label: "Fashion" },
+    { value: "Electronics", label: "Electronics" },
+    { value: "Sports", label: "Sports" },
+    { value: "Children", label: "Children" },
     { value: "Automotive", label: "Automotive" },
-    { value: "Home & Decor",label:"Home & Decor" },
+    { value: "Home & Decor", label: "Home & Decor" },
   ];
 
   const filtered = vendors.filter((v) => {
     const s = searchTerm.toLowerCase();
     return (
-      (v.storeName.toLowerCase().includes(s) || v.ownerName.toLowerCase().includes(s) || v.email.toLowerCase().includes(s)) &&
+      (v.storeName.toLowerCase().includes(s) ||
+        v.ownerName.toLowerCase().includes(s) ||
+        v.email.toLowerCase().includes(s)) &&
       (filterCategory === "all" || v.category === filterCategory)
     );
   });
 
-  const totalProducts  = vendors.reduce((s, v) => s + v.productCount, 0);
-  const queueEmpty     = !loading && vendors.length === 0;
-  const noFilterResult = !loading && vendors.length > 0 && filtered.length === 0;
+  const totalProducts = vendors.reduce((s, v) => s + v.productCount, 0);
+  const queueEmpty = !loading && vendors.length === 0;
+  const noFilterResult =
+    !loading && vendors.length > 0 && filtered.length === 0;
 
   return (
     <div className="av-root">
-      <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+      <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet"
+      />
       <style>{`
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         .av-root { min-height: 100vh; background: #0a0a0a; font-family: 'Poppins', sans-serif; color: #fff; padding: 24px 28px; }
@@ -692,7 +1242,7 @@ export default function ApproveVendors() {
         .vendor-category-badge { position: absolute; bottom: 8px; left: 12px; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,0.12); border-radius: 20px; padding: 3px 10px; font-size: 10px; font-weight: 700; color: rgba(255,255,255,0.65); }
 
         /* identity row */
-        .vendor-identity { display: flex; align-items: center; gap: 10px; padding: 0 14px; margin-top: -18px; position: relative; z-index: 2; margin-bottom: 12px; }
+        .vendor-identity { display: flex; align-items: center; gap: 10px; padding: 0 14px; position: relative; z-index: 2; margin-bottom: 12px; }
         .vendor-avatar { width: 46px; height: 46px; border-radius: 12px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; position: relative; border: 2px solid #111; background: linear-gradient(135deg, #1a4f2e, #0f2d1a); }
         .vendor-initials { font-size: 14px; font-weight: 900; color: #fff; }
         .vendor-avatar-ring { position: absolute; inset: -3px; border-radius: 14px; border: 1px solid rgba(34,197,94,0.3); pointer-events: none; }
@@ -848,44 +1398,88 @@ export default function ApproveVendors() {
       <div className="filters-bar">
         <div className="filters-row">
           <div className="filter-input-wrap">
-            <MagnifyingGlass size={14} color="rgba(255,255,255,0.25)" className="filter-icon" />
-            <input className="filter-input" type="text" placeholder="Search vendors, owners, emails…" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+            <MagnifyingGlass
+              size={14}
+              color="rgba(255,255,255,0.25)"
+              className="filter-icon"
+            />
+            <input
+              className="filter-input"
+              type="text"
+              placeholder="Search vendors, owners, emails…"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
           </div>
           <div className="select-wrap">
-            <select className="filter-select" value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}>
-              {categories.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
+            <select
+              className="filter-select"
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
+            >
+              {categories.map((c) => (
+                <option key={c.value} value={c.value}>
+                  {c.label}
+                </option>
+              ))}
             </select>
-            <CaretDown size={12} color="rgba(255,255,255,0.3)" className="select-caret" />
+            <CaretDown
+              size={12}
+              color="rgba(255,255,255,0.3)"
+              className="select-caret"
+            />
           </div>
           <div className="select-wrap">
             <select className="filter-select" value="pending" readOnly>
               <option value="pending">Pending ({vendors.length})</option>
             </select>
-            <CaretDown size={12} color="rgba(255,255,255,0.3)" className="select-caret" />
+            <CaretDown
+              size={12}
+              color="rgba(255,255,255,0.3)"
+              className="select-caret"
+            />
           </div>
         </div>
       </div>
 
       {/* Bulk bar */}
-      <BulkBar count={selectedIds.length} onApproveAll={handleBulkApprove} onRejectAll={handleBulkReject} onClear={() => setSelectedIds([])} />
+      <BulkBar
+        count={selectedIds.length}
+        onApproveAll={handleBulkApprove}
+        onRejectAll={handleBulkReject}
+        onClear={() => setSelectedIds([])}
+      />
 
       {/* Grid */}
       <div ref={gridRef}>
         {loading ? (
-          <div className="loading-wrap"><div className="spinner" /><div className="loading-text">Loading vendor applications…</div></div>
+          <div className="loading-wrap">
+            <div className="spinner" />
+            <div className="loading-text">Loading vendor applications…</div>
+          </div>
         ) : queueEmpty ? (
           <QueueComplete approved={approvedCount} rejected={rejectedCount} />
         ) : noFilterResult ? (
           <div className="empty-state">
-            <div className="empty-icon-wrap"><Storefront size={28} color="rgba(255,255,255,0.2)" weight="duotone" /></div>
+            <div className="empty-icon-wrap">
+              <Storefront
+                size={28}
+                color="rgba(255,255,255,0.2)"
+                weight="duotone"
+              />
+            </div>
             <div className="empty-title">No vendors found</div>
-            <div className="empty-sub">Try adjusting your filters or search terms</div>
+            <div className="empty-sub">
+              Try adjusting your filters or search terms
+            </div>
           </div>
         ) : (
           <div className="vendor-grid">
             {filtered.map((v, i) => (
               <VendorCard
-                key={v.id} vendor={v} index={i}
+                key={v.id}
+                vendor={v}
+                index={i}
                 onApproveConfirm={handleCardApprove}
                 onView={handleView}
                 onRejectConfirm={handleCardReject}

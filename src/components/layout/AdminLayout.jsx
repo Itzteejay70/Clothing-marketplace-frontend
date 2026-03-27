@@ -46,11 +46,46 @@ export default function AdminLayout() {
   const searchRef = useRef(null);
 
   const [notifications] = useState([
-    { id: 1, type: "success", title: "New Order Received", message: "Order #ORD-1234 has been placed", time: "2 mins ago", read: false },
-    { id: 2, type: "warning", title: "Product Approval Pending", message: "5 products waiting for your approval", time: "15 mins ago", read: false },
-    { id: 3, type: "info", title: "New Vendor Registration", message: "Fashion Hub wants to join as vendor", time: "1 hour ago", read: false },
-    { id: 4, type: "success", title: "Payment Received", message: "₦150,000 payment confirmed", time: "2 hours ago", read: true },
-    { id: 5, type: "info", title: "Low Stock Alert", message: "Nike Air Max 270 running low", time: "3 hours ago", read: true },
+    {
+      id: 1,
+      type: "success",
+      title: "New Order Received",
+      message: "Order #ORD-1234 has been placed",
+      time: "2 mins ago",
+      read: false,
+    },
+    {
+      id: 2,
+      type: "warning",
+      title: "Product Approval Pending",
+      message: "5 products waiting for your approval",
+      time: "15 mins ago",
+      read: false,
+    },
+    {
+      id: 3,
+      type: "info",
+      title: "New Vendor Registration",
+      message: "Fashion Hub wants to join as vendor",
+      time: "1 hour ago",
+      read: false,
+    },
+    {
+      id: 4,
+      type: "success",
+      title: "Payment Received",
+      message: "₦150,000 payment confirmed",
+      time: "2 hours ago",
+      read: true,
+    },
+    {
+      id: 5,
+      type: "info",
+      title: "Low Stock Alert",
+      message: "Nike Air Max 270 running low",
+      time: "3 hours ago",
+      read: true,
+    },
   ]);
 
   const mockSearchData = [
@@ -85,18 +120,30 @@ export default function AdminLayout() {
 
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (notificationRef.current && !notificationRef.current.contains(e.target)) setShowNotifications(false);
-      if (searchRef.current && !searchRef.current.contains(e.target)) setShowSearchResults(false);
-      if (profileRef.current && !profileRef.current.contains(e.target)) setShowProfile(false);
+      if (
+        notificationRef.current &&
+        !notificationRef.current.contains(e.target)
+      )
+        setShowNotifications(false);
+      if (searchRef.current && !searchRef.current.contains(e.target))
+        setShowSearchResults(false);
+      if (profileRef.current && !profileRef.current.contains(e.target))
+        setShowProfile(false);
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   useEffect(() => {
-    if (!searchQuery.trim()) { setSearchResults([]); setShowSearchResults(false); return; }
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      setShowSearchResults(false);
+      return;
+    }
     const filtered = mockSearchData.filter(
-      (i) => i.name.toLowerCase().includes(searchQuery.toLowerCase()) || i.type.toLowerCase().includes(searchQuery.toLowerCase())
+      (i) =>
+        i.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        i.type.toLowerCase().includes(searchQuery.toLowerCase()),
     );
     setSearchResults(filtered);
     setShowSearchResults(true);
@@ -114,15 +161,25 @@ export default function AdminLayout() {
       warning: { bg: "rgba(249,115,22,0.1)", color: "#f97316", Icon: Warning },
       info: { bg: "rgba(14,165,233,0.1)", color: "#0ea5e9", Icon: Clock },
     };
-    return map[type] || { bg: "rgba(148,163,184,0.1)", color: "#94a3b8", Icon: Bell };
+    return (
+      map[type] || { bg: "rgba(148,163,184,0.1)", color: "#94a3b8", Icon: Bell }
+    );
   };
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   const navItems = [
     { path: "/admin/dashboard", label: "Dashboard", icon: House },
-    { path: "/admin/approve-products", label: "Approve Products", icon: SealCheck },
-    { path: "/admin/approve-vendors", label: "Approve Vendors", icon: UsersFour },
+    {
+      path: "/admin/approve-products",
+      label: "Approve Products",
+      icon: SealCheck,
+    },
+    {
+      path: "/admin/approve-vendors",
+      label: "Approve Vendors",
+      icon: UsersFour,
+    },
     { path: "/admin/orders", label: "Orders", icon: ShoppingCart },
     { path: "/admin/users", label: "Users", icon: Users },
     { path: "/admin/analytics", label: "Analytics", icon: ChartBar },
@@ -130,15 +187,38 @@ export default function AdminLayout() {
     { path: "/admin/categories", label: "Categories", icon: Tag },
     { path: "/admin/payments", label: "Payments", icon: CreditCard },
     { path: "/admin/reports", label: "Reports", icon: TrendUp },
+    { path: "/admin/notifications", label: "Notifications", icon: Bell },
+    { path: "/admin/view-store", label: "View Store", icon: Storefront },
+    { path: "/admin/profile", label: "Profile", icon: User },
     { path: "/admin/settings", label: "Settings", icon: Gear },
   ];
 
   if (isLoading) {
     return (
-      <div style={{ minHeight: "100vh", background: "#0a0a0a", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <div
+        style={{
+          minHeight: "100vh",
+          background: "#0a0a0a",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
         <div style={{ textAlign: "center" }}>
-          <div style={{ width: 44, height: 44, border: "3px solid rgba(22,163,74,0.2)", borderTopColor: "#16a34a", borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 12px" }}></div>
-          <p style={{ color: "#16a34a", fontWeight: 600, fontSize: 14 }}>Loading...</p>
+          <div
+            style={{
+              width: 44,
+              height: 44,
+              border: "3px solid rgba(22,163,74,0.2)",
+              borderTopColor: "#16a34a",
+              borderRadius: "50%",
+              animation: "spin 0.8s linear infinite",
+              margin: "0 auto 12px",
+            }}
+          ></div>
+          <p style={{ color: "#16a34a", fontWeight: 600, fontSize: 14 }}>
+            Loading...
+          </p>
         </div>
         <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
       </div>
@@ -762,17 +842,29 @@ export default function AdminLayout() {
 
       {/* Logout Modal */}
       {showLogoutModal && (
-        <div className="modal-overlay-wrap" onClick={() => setShowLogoutModal(false)}>
+        <div
+          className="modal-overlay-wrap"
+          onClick={() => setShowLogoutModal(false)}
+        >
           <div className="modal-box" onClick={(e) => e.stopPropagation()}>
             <div className="modal-icon">
               <WarningCircle size={24} weight="fill" color="#ef4444" />
             </div>
             <h2 className="modal-title">Confirm Logout</h2>
-            <p className="modal-desc">Are you sure you want to logout? You'll need to sign in again to access the admin panel.</p>
+            <p className="modal-desc">
+              Are you sure you want to logout? You'll need to sign in again to
+              access the admin panel.
+            </p>
             <div className="modal-btns">
-              <button className="modal-cancel" onClick={() => setShowLogoutModal(false)}>Cancel</button>
+              <button
+                className="modal-cancel"
+                onClick={() => setShowLogoutModal(false)}
+              >
+                Cancel
+              </button>
               <button className="modal-confirm" onClick={confirmLogout}>
-                <SignOut size={14} weight="bold" /><span>Logout</span>
+                <SignOut size={14} weight="bold" />
+                <span>Logout</span>
               </button>
             </div>
           </div>
@@ -780,15 +872,23 @@ export default function AdminLayout() {
       )}
 
       {/* Mobile overlay */}
-      <div className={`mobile-overlay ${sidebarOpen ? "open" : ""}`} onClick={() => setSidebarOpen(false)} />
+      <div
+        className={`mobile-overlay ${sidebarOpen ? "open" : ""}`}
+        onClick={() => setSidebarOpen(false)}
+      />
 
-      <div className="layout-root" style={{ display: "flex", height: "100vh", overflow: "hidden" }}>
-
+      <div
+        className="layout-root"
+        style={{ display: "flex", height: "100vh", overflow: "hidden" }}
+      >
         {/* ── Desktop Sidebar ── */}
         <aside className="sidebar">
           <div className="sidebar-logo">
             <Link to="/admin/dashboard" style={{ textDecoration: "none" }}>
-              <div className="logo-text">block<span>234</span><span className="logo-dot"></span></div>
+              <div className="logo-text">
+                block<span>234</span>
+                <span className="logo-dot"></span>
+              </div>
               <div className="logo-sub">Admin Panel</div>
             </Link>
           </div>
@@ -816,7 +916,10 @@ export default function AdminLayout() {
           </nav>
 
           <div className="sidebar-footer">
-            <button className="logout-btn" onClick={() => setShowLogoutModal(true)}>
+            <button
+              className="logout-btn"
+              onClick={() => setShowLogoutModal(true)}
+            >
               <SignOut size={15} weight="bold" />
               <span>Logout</span>
             </button>
@@ -825,14 +928,38 @@ export default function AdminLayout() {
 
         {/* ── Mobile Sidebar ── */}
         <aside className={`mobile-sidebar ${sidebarOpen ? "open" : ""}`}>
-          <div className="sidebar-logo" style={{ justifyContent: "space-between", display: "flex", alignItems: "center" }}>
-            <Link to="/admin/dashboard" style={{ textDecoration: "none" }} onClick={() => setSidebarOpen(false)}>
-              <div className="logo-text">block<span>234</span><span className="logo-dot"></span></div>
+          <div
+            className="sidebar-logo"
+            style={{
+              justifyContent: "space-between",
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            <Link
+              to="/admin/dashboard"
+              style={{ textDecoration: "none" }}
+              onClick={() => setSidebarOpen(false)}
+            >
+              <div className="logo-text">
+                block<span>234</span>
+                <span className="logo-dot"></span>
+              </div>
               <div className="logo-sub">Admin Panel</div>
             </Link>
             <button
               onClick={() => setSidebarOpen(false)}
-              style={{ width: 30, height: 30, borderRadius: 8, background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.1)", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+              style={{
+                width: 30,
+                height: 30,
+                borderRadius: 8,
+                background: "rgba(255,255,255,0.08)",
+                border: "1px solid rgba(255,255,255,0.1)",
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
             >
               <X size={16} weight="bold" color="rgba(255,255,255,0.7)" />
             </button>
@@ -858,18 +985,36 @@ export default function AdminLayout() {
             })}
           </nav>
           <div className="sidebar-footer">
-            <button className="logout-btn" onClick={() => { setSidebarOpen(false); setShowLogoutModal(true); }}>
-              <SignOut size={15} weight="bold" /><span>Logout</span>
+            <button
+              className="logout-btn"
+              onClick={() => {
+                setSidebarOpen(false);
+                setShowLogoutModal(true);
+              }}
+            >
+              <SignOut size={15} weight="bold" />
+              <span>Logout</span>
             </button>
           </div>
         </aside>
 
         {/* ── Right Side ── */}
-        <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-
+        <div
+          style={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            overflow: "hidden",
+          }}
+        >
           {/* Topbar */}
           <header className="topbar">
-            <button className="icon-btn" style={{ display: "none" }} onClick={() => setSidebarOpen(true)} id="mobile-menu-btn">
+            <button
+              className="icon-btn"
+              style={{ display: "none" }}
+              onClick={() => setSidebarOpen(true)}
+              id="mobile-menu-btn"
+            >
               <List size={18} weight="bold" />
             </button>
             <style>{`@media(max-width:1024px){#mobile-menu-btn{display:flex!important;}}`}</style>
@@ -890,9 +1035,21 @@ export default function AdminLayout() {
                 <div className="search-dropdown">
                   {searchResults.length > 0 ? (
                     searchResults.map((r, i) => (
-                      <Link key={i} to={r.path} className="search-item" onClick={() => { setSearchQuery(""); setShowSearchResults(false); }}>
+                      <Link
+                        key={i}
+                        to={r.path}
+                        className="search-item"
+                        onClick={() => {
+                          setSearchQuery("");
+                          setShowSearchResults(false);
+                        }}
+                      >
                         <div className="search-item-icon">
-                          <MagnifyingGlass size={12} weight="bold" color="#16a34a" />
+                          <MagnifyingGlass
+                            size={12}
+                            weight="bold"
+                            color="#16a34a"
+                          />
                         </div>
                         <div>
                           <div className="search-item-name">{r.name}</div>
@@ -901,7 +1058,14 @@ export default function AdminLayout() {
                       </Link>
                     ))
                   ) : (
-                    <div style={{ padding: "14px 16px", textAlign: "center", fontSize: 12, color: "#94a3b8" }}>
+                    <div
+                      style={{
+                        padding: "14px 16px",
+                        textAlign: "center",
+                        fontSize: 12,
+                        color: "#94a3b8",
+                      }}
+                    >
                       No results for "{searchQuery}"
                     </div>
                   )}
@@ -912,23 +1076,36 @@ export default function AdminLayout() {
             <div className="topbar-right">
               {/* Notifications */}
               <div style={{ position: "relative" }} ref={notificationRef}>
-                <button className="icon-btn" onClick={() => setShowNotifications(!showNotifications)}>
+                <button
+                  className="icon-btn"
+                  onClick={() => setShowNotifications(!showNotifications)}
+                >
                   <Bell size={17} weight="fill" />
-                  {unreadCount > 0 && <span className="notif-badge">{unreadCount}</span>}
+                  {unreadCount > 0 && (
+                    <span className="notif-badge">{unreadCount}</span>
+                  )}
                 </button>
                 {showNotifications && (
                   <div className="notif-dropdown">
                     <div className="notif-header">
                       <span className="notif-title">Notifications</span>
-                      {unreadCount > 0 && <span className="notif-count">{unreadCount} new</span>}
+                      {unreadCount > 0 && (
+                        <span className="notif-count">{unreadCount} new</span>
+                      )}
                     </div>
                     <div className="notif-list">
                       {notifications.map((n) => {
                         const s = getNotifStyle(n.type);
                         const Icon = s.Icon;
                         return (
-                          <div key={n.id} className={`notif-item ${!n.read ? "unread" : ""}`}>
-                            <div className="notif-icon" style={{ background: s.bg }}>
+                          <div
+                            key={n.id}
+                            className={`notif-item ${!n.read ? "unread" : ""}`}
+                          >
+                            <div
+                              className="notif-icon"
+                              style={{ background: s.bg }}
+                            >
                               <Icon style={{ color: s.color }} />
                             </div>
                             <div style={{ flex: 1 }}>
@@ -936,34 +1113,62 @@ export default function AdminLayout() {
                               <div className="notif-item-msg">{n.message}</div>
                               <div className="notif-item-time">{n.time}</div>
                             </div>
-                            {!n.read && <div className="notif-unread-dot"></div>}
+                            {!n.read && (
+                              <div className="notif-unread-dot"></div>
+                            )}
                           </div>
                         );
                       })}
                     </div>
                     <div className="notif-footer">
-                      <button className="notif-footer-btn">View all notifications</button>
+                      <Link
+                        to="/admin/notifications"
+                        className="notif-footer-btn"
+                      >
+                        View all notifications
+                      </Link>
                     </div>
                   </div>
                 )}
               </div>
 
               {/* View Store */}
-              <Link to="/" className="icon-btn" title="View Store" style={{ textDecoration: "none" }}>
+              <Link
+                to="/admin/view-store"
+                className="icon-btn"
+                title="View Store"
+                style={{ textDecoration: "none" }}
+              >
                 <Storefront size={17} weight="fill" />
               </Link>
 
               {/* Profile Badge */}
               <div style={{ position: "relative" }} ref={profileRef}>
-                <div className="profile-badge" onClick={() => setShowProfile(!showProfile)}>
+                <div
+                  className="profile-badge"
+                  onClick={() => setShowProfile(!showProfile)}
+                >
                   <div className="profile-avatar">
                     {user?.fullName?.charAt(0) || "A"}
                   </div>
                   <div className="profile-info">
-                    <div className="profile-name">{user?.fullName || "Admin User"}</div>
+                    <div className="profile-name">
+                      {user?.fullName || "Admin User"}
+                    </div>
                     <div className="profile-role">Administrator</div>
                   </div>
-                  <CaretDown size={13} weight="bold" className={`profile-chevron${showProfile ? " open" : ""}`} style={{ color: "rgba(255,255,255,0.35)", transition: "transform 0.25s ease", transform: showProfile ? "rotate(180deg)" : "rotate(0deg)" }} />
+                  <CaretDown
+                    size={13}
+                    weight="bold"
+                    className={`profile-chevron${showProfile ? " open" : ""}`}
+                    style={{
+                      color: "rgba(255,255,255,0.35)",
+                      transition: "transform 0.25s ease",
+                      transform: showProfile
+                        ? "rotate(180deg)"
+                        : "rotate(0deg)",
+                    }}
+                  />
                 </div>
 
                 {showProfile && (
@@ -974,27 +1179,49 @@ export default function AdminLayout() {
                         {user?.fullName?.charAt(0) || "A"}
                       </div>
                       <div>
-                        <div className="profile-dropdown-name">{user?.fullName || "Admin User"}</div>
-                        <div className="profile-dropdown-role">Administrator</div>
+                        <div className="profile-dropdown-name">
+                          {user?.fullName || "Admin User"}
+                        </div>
+                        <div className="profile-dropdown-role">
+                          Administrator
+                        </div>
                       </div>
                     </div>
 
                     {/* Menu */}
                     <div className="profile-menu">
-                      <Link to="/admin/profile" className="profile-menu-item" onClick={() => setShowProfile(false)}>
+                      <Link
+                        to="/admin/profile"
+                        className="profile-menu-item"
+                        onClick={() => setShowProfile(false)}
+                      >
                         <User size={15} weight="duotone" />
                         My Profile
                       </Link>
-                      <Link to="/admin/settings" className="profile-menu-item" onClick={() => setShowProfile(false)}>
+                      <Link
+                        to="/admin/settings"
+                        className="profile-menu-item"
+                        onClick={() => setShowProfile(false)}
+                      >
                         <ShieldCheck size={15} weight="duotone" />
                         Account Settings
                       </Link>
-                      <Link to="/" className="profile-menu-item" onClick={() => setShowProfile(false)}>
+                      <Link
+                        to="/admin/view-store"
+                        className="profile-menu-item"
+                        onClick={() => setShowProfile(false)}
+                      >
                         <Storefront size={15} weight="duotone" />
                         View Store
                       </Link>
                       <div className="profile-menu-divider" />
-                      <button className="profile-menu-item danger" onClick={() => { setShowProfile(false); setShowLogoutModal(true); }}>
+                      <button
+                        className="profile-menu-item danger"
+                        onClick={() => {
+                          setShowProfile(false);
+                          setShowLogoutModal(true);
+                        }}
+                      >
                         <SignOut size={15} weight="bold" />
                         Sign Out
                       </button>
